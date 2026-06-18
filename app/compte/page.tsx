@@ -1,0 +1,116 @@
+import type { Metadata } from "next"
+import Link from "next/link"
+import { Heart, LogOut, MapPin, Package, ShoppingBag, User } from "lucide-react"
+import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { formatPrice } from "@/lib/data"
+import { getFeaturedProducts } from "@/lib/queries"
+
+export const metadata: Metadata = {
+  title: "Mon espace | Yombe Ctyi 313",
+  description: "Gérez votre profil, vos commandes et vos favoris.",
+}
+
+const menu = [
+  { icon: User, label: "Profil", active: true },
+  { icon: Package, label: "Commandes" },
+  { icon: ShoppingBag, label: "Historique" },
+  { icon: MapPin, label: "Adresse" },
+  { icon: Heart, label: "Favoris" },
+]
+
+const orders = [
+  { id: "CMD-1042", date: "12 juin 2026", total: 43000, status: "Livrée" },
+  { id: "CMD-1038", date: "28 mai 2026", total: 18000, status: "Expédiée" },
+  { id: "CMD-1031", date: "14 mai 2026", total: 9000, status: "En attente" },
+]
+
+const statusVariant: Record<string, string> = {
+  Livrée: "bg-primary text-primary-foreground",
+  Expédiée: "bg-secondary text-secondary-foreground",
+  "En attente": "bg-muted text-muted-foreground",
+}
+
+export default async function ComptePage() {
+  const favorites = await getFeaturedProducts(3)
+
+  return (
+    <div className="flex min-h-screen flex-col">
+      <SiteHeader />
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-4">
+          <span className="flex size-14 items-center justify-center rounded-full bg-secondary font-serif text-xl font-bold text-primary">
+            AD
+          </span>
+          <div>
+            <h1 className="font-serif text-2xl font-bold">Awa Diédhiou</h1>
+            <p className="text-sm text-muted-foreground">awa.diedhiou@exemple.com</p>
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-8 lg:grid-cols-[240px_1fr]">
+          <aside className="flex h-fit flex-col gap-1 rounded-2xl border border-border bg-card p-3">
+            {menu.map((item) => (
+              <button
+                key={item.label}
+                className={
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors " +
+                  (item.active
+                    ? "bg-secondary text-secondary-foreground"
+                    : "text-foreground hover:bg-muted")
+                }
+              >
+                <item.icon className="size-4" />
+                {item.label}
+              </button>
+            ))}
+            <Button asChild variant="ghost" className="mt-1 justify-start gap-3 text-destructive hover:text-destructive">
+              <Link href="/connexion">
+                <LogOut className="size-4" />
+                Déconnexion
+              </Link>
+            </Button>
+          </aside>
+
+          <div className="flex flex-col gap-8">
+            <section className="rounded-2xl border border-border bg-card p-6">
+              <h2 className="font-serif text-xl font-bold">Mes commandes</h2>
+              <div className="mt-4 flex flex-col divide-y divide-border">
+                {orders.map((order) => (
+                  <div key={order.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                    <div>
+                      <p className="font-medium">{order.id}</p>
+                      <p className="text-sm text-muted-foreground">{order.date}</p>
+                    </div>
+                    <span className="font-serif font-semibold">{formatPrice(order.total)}</span>
+                    <Badge className={statusVariant[order.status]}>{order.status}</Badge>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-border bg-card p-6">
+              <h2 className="font-serif text-xl font-bold">Mes favoris</h2>
+              <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                {favorites.map((p) => (
+                  <Link
+                    key={p.id}
+                    href="/boutique"
+                    className="flex flex-col gap-2 rounded-xl border border-border p-3 transition-colors hover:border-primary"
+                  >
+                    <span className="font-medium leading-tight">{p.name}</span>
+                    <span className="text-sm text-muted-foreground">{p.category}</span>
+                    <span className="font-serif font-semibold">{formatPrice(p.price)}</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+      <SiteFooter />
+    </div>
+  )
+}

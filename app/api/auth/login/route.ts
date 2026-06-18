@@ -1,0 +1,45 @@
+import { NextRequest, NextResponse } from 'next/server'
+import pool from '@/lib/db'
+import bcrypt from 'bcrypt'
+
+export async function POST(req: NextRequest) {
+  try {
+    const { email, password } = await req.json()
+
+    if (!email || !password) {
+      return NextResponse.json({ error: 'Champs requis' }, { status: 400 })
+    }
+
+    const [rows] = await pool.execute(
+      'SELECT id, name, email, password_hash, role FROM users WHERE email = ?',
+      [email]
+    ) as any[]
+
+    const user = rows[0]
+    if (!user) {
+      return NextResponse.json({ error: 'Email ou mot de passe incorrect' }, { status: 401 })
+    }
+
+    const valid = await bcrypt.compare(password, user.password_hash)
+    if (!valid) {
+      return NextResponse.json({ error: 'Email ou mot de passe incorrect' }, { status: 401 })
+    }
+
+    const res = NextResponse.json({
+      success: true,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    })
+
+    // Simple session cookie (for testing only)
+    res.cookies.set('auth_user', JSON.stringify({ id: user.id, name: user.name, role: user.role }), {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24, // 24h
+      path: '/',
+    })
+
+    return res
+  } catch (err) {
+    console.error(err)
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+  }
+}
