@@ -9,6 +9,8 @@ import { WhyUs } from "@/components/home/why-us"
 import { Testimonials } from "@/components/home/testimonials"
 import { Contact } from "@/components/home/contact"
 
+export const dynamic = "force-dynamic"
+
 export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">

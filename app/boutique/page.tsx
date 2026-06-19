@@ -4,6 +4,8 @@ import { SiteFooter } from "@/components/site-footer"
 import { ShopView } from "@/components/shop/shop-view"
 import { getProducts, getMaxPrice } from "@/lib/queries"
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Boutique | Yombe Ctyi 313",
   description:
