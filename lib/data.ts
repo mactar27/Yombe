@@ -33,7 +33,7 @@ export const categoryGroups: CategoryGroup[] = [
     title: "Mode & Lifestyle",
     description:
       "T-shirts, chemises, pantalons, jeans, vestes, ensembles, chaussures, casquettes et accessoires tendance.",
-    image: "/placeholder.svg?height=720&width=560",
+    image: "/images/mode-lifestyle.jpeg",
     items: [
       "T-shirts",
       "Chemises",
