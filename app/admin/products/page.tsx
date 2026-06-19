@@ -60,6 +60,9 @@ export default function AdminProductsPage() {
           const fd = new FormData(); fd.append('file', file)
           const up = await fetch('/api/upload', { method: 'POST', body: fd })
           const upData = await up.json();
+          if (!up.ok) {
+            throw new Error(`Erreur upload: ${upData.error || 'inconnue'}`);
+          }
           if (upData.url) uploadedUrls.push(upData.url)
         }
       }
