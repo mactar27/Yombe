@@ -40,14 +40,14 @@ export function CartView() {
       <h1 className="font-serif text-3xl font-bold sm:text-4xl">Mon panier</h1>
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
         <ul className="flex flex-col gap-4">
-          {items.map((item) => (
+          {items.map((item, idx) => (
             <li
-              key={`${item.product.id}-${item.size}`}
+              key={`${item.product.id}-${item.size}-${item.image || idx}`}
               className="flex gap-4 rounded-2xl border border-border bg-card p-4"
             >
               <div className="relative size-24 shrink-0 overflow-hidden rounded-lg border bg-muted sm:size-28">
                 <Image
-                  src={item.product.image || "/placeholder.svg"}
+                  src={item.image || item.product.image || "/placeholder.svg"}
                   alt={item.product.name}
                   fill
                   className="object-cover"
