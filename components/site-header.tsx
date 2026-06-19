@@ -2,13 +2,14 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState } from "react"
-import { Heart, Menu, Search, ShoppingBag, User } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Heart, Menu, Search, ShoppingBag, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { CartSheet } from "@/components/cart-sheet"
 import { useCart } from "@/components/cart-provider"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 const navLinks = [
   { label: "Accueil", href: "/" },
@@ -21,6 +22,24 @@ const navLinks = [
 export function SiteHeader() {
   const { count, setOpen } = useCart()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    // Read auth cookie from document.cookie (non-httpOnly won't work, so we use a server hint)
+    // We'll use a lightweight check via fetch
+    fetch('/api/auth/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.user) setUser(data.user) })
+      .catch(() => {})
+  }, [])
+
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    setUser(null)
+    router.push('/')
+    router.refresh()
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/70 bg-background/90 backdrop-blur-md">
@@ -80,9 +99,21 @@ export function SiteHeader() {
           <Button render={<Link href="/compte" />} variant="ghost" size="icon" aria-label="Favoris" className="hidden sm:inline-flex">
             <Heart className="size-5" />
           </Button>
-          <Button render={<Link href="/connexion" />} variant="ghost" size="icon" aria-label="Mon compte">
-            <User className="size-5" />
-          </Button>
+          {user ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Déconnexion"
+              onClick={handleLogout}
+              title={`Connecté en tant que ${user.name}`}
+            >
+              <LogOut className="size-5" />
+            </Button>
+          ) : (
+            <Button render={<Link href="/connexion" />} variant="ghost" size="icon" aria-label="Mon compte">
+              <User className="size-5" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"

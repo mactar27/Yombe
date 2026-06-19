@@ -1,10 +1,11 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { Heart, LogOut, MapPin, Package, ShoppingBag, User } from "lucide-react"
+import { Heart, MapPin, Package, ShoppingBag, User } from "lucide-react"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { LogoutButton } from "@/app/compte/logout-button"
 import { formatPrice } from "@/lib/data"
 import { getFeaturedProducts } from "@/lib/queries"
 import { cookies } from "next/headers"
@@ -89,12 +90,7 @@ export default async function ComptePage() {
                 {item.label}
               </button>
             ))}
-            <Button asChild variant="ghost" className="mt-1 justify-start gap-3 text-destructive hover:text-destructive">
-              <Link href="/connexion">
-                <LogOut className="size-4" />
-                Déconnexion
-              </Link>
-            </Button>
+            <LogoutButton />
           </aside>
 
           <div className="flex flex-col gap-8">
