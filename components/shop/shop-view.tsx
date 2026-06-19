@@ -135,15 +135,21 @@ export function ShopView({ products, maxPrice }: Props) {
             <button
               key={c}
               type="button"
+              title={c.startsWith('http') || c.startsWith('/') ? 'Variante de couleur' : c}
               onClick={() => toggle(c, colors, setColors)}
               className={
-                "rounded-md border px-3 py-1.5 text-sm transition-colors " +
+                "rounded-md border overflow-hidden transition-colors flex items-center justify-center " +
+                (c.startsWith('http') || c.startsWith('/') ? "size-8 p-0 " : "px-3 py-1.5 text-sm ") +
                 (colors.includes(c)
-                  ? "border-primary bg-primary text-primary-foreground"
+                  ? "border-primary ring-2 ring-primary ring-offset-1"
                   : "border-border hover:border-primary")
               }
             >
-              {c}
+              {(c.startsWith('http') || c.startsWith('/')) ? (
+                <img src={c} alt="Couleur" className="size-full object-cover" />
+              ) : (
+                c
+              )}
             </button>
           ))}
         </div>

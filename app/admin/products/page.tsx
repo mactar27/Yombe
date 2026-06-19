@@ -1,8 +1,8 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, X } from 'lucide-react'
-type Product = { id: number; name: string; description: string | null; price: number; image: string | null; in_stock: number; category: string | null }
-const emptyForm = { name: '', description: '', price: '', image: '', stock: '1', category: '' }
+type Product = { id: number; name: string; description: string | null; price: number; image: string | null; in_stock: number; category: string | null; sizes: any; colors: any }
+const emptyForm = { name: '', description: '', price: '', image: '', stock: '1', category: '', sizes: '', colors: [] as string[] }
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [total, setTotal] = useState(0)
@@ -12,7 +12,7 @@ export default function AdminProductsPage() {
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Product | null>(null)
   const [form, setForm] = useState(emptyForm)
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imageFiles, setImageFiles] = useState<File[]>([])
   const limit = 10
   const fetchProducts = useCallback(async () => {
     setLoading(true)
@@ -25,21 +25,35 @@ export default function AdminProductsPage() {
     setLoading(false)
   }, [page, search])
   useEffect(() => { fetchProducts() }, [fetchProducts])
-  function openCreate() { setEditing(null); setForm(emptyForm); setImageFile(null); setShowForm(true) }
+  function openCreate() { setEditing(null); setForm(emptyForm); setImageFiles([]); setShowForm(true) }
   function openEdit(p: Product) {
     setEditing(p)
-    setForm({ name: p.name, description: p.description ?? '', price: String(p.price), image: p.image ?? '', stock: String(p.in_stock), category: p.category ?? '' })
-    setImageFile(null); setShowForm(true)
+    let parsedSizes = [];
+    try { parsedSizes = typeof p.sizes === 'string' ? JSON.parse(p.sizes) : (p.sizes || []) } catch(e){}
+    let parsedColors = [];
+    try { parsedColors = typeof p.colors === 'string' ? JSON.parse(p.colors) : (p.colors || []) } catch(e){}
+    
+    setForm({ name: p.name, description: p.description ?? '', price: String(p.price), image: p.image ?? '', stock: String(p.in_stock), category: p.category ?? '', sizes: parsedSizes.join(', '), colors: parsedColors })
+    setImageFiles([]); setShowForm(true)
   }
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    let imageUrl = form.image
-    if (imageFile) {
-      const fd = new FormData(); fd.append('file', imageFile)
-      const up = await fetch('/api/upload', { method: 'POST', body: fd })
-      const upData = await up.json(); imageUrl = upData.url ?? imageUrl
+    let uploadedUrls: string[] = []
+    
+    if (imageFiles.length > 0) {
+      for (const file of imageFiles) {
+        const fd = new FormData(); fd.append('file', file)
+        const up = await fetch('/api/upload', { method: 'POST', body: fd })
+        const upData = await up.json();
+        if (upData.url) uploadedUrls.push(upData.url)
+      }
     }
-    const body = { name: form.name, description: form.description || null, price: Number(form.price), stock: Number(form.stock), category: form.category || null, image: imageUrl || null }
+    
+    let finalColors = [...form.colors, ...uploadedUrls]
+    let finalImage = finalColors.length > 0 ? finalColors[0] : form.image
+    let finalSizes = form.sizes.split(',').map(s => s.trim()).filter(Boolean)
+
+    const body = { name: form.name, description: form.description || null, price: Number(form.price), stock: Number(form.stock), category: form.category || null, image: finalImage || null, sizes: finalSizes, colors: finalColors }
     if (editing) {
       await fetch('/api/admin/products/' + editing.id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     } else {
@@ -127,9 +141,28 @@ export default function AdminProductsPage() {
                   </select>
                 </div>
               </div>
-              <div><label className="mb-1 block text-sm font-medium">Catégorie</label><input type="text" value={form.category} onChange={e => setForm(f=>({...f,category:e.target.value}))} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition" /></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="mb-1 block text-sm font-medium">Catégorie</label><input type="text" value={form.category} onChange={e => setForm(f=>({...f,category:e.target.value}))} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition" /></div>
+                <div><label className="mb-1 block text-sm font-medium">Tailles (séparées par une virgule)</label><input type="text" placeholder="S, M, L, XL" value={form.sizes} onChange={e => setForm(f=>({...f,sizes:e.target.value}))} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition" /></div>
+              </div>
               <div><label className="mb-1 block text-sm font-medium">Description</label><textarea rows={2} value={form.description} onChange={e => setForm(f=>({...f,description:e.target.value}))} className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition" /></div>
-              <div><label className="mb-1 block text-sm font-medium">Image</label><input type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0]??null)} className="w-full cursor-pointer rounded-xl border border-border bg-background px-3 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:px-3 file:py-1 file:text-xs file:font-medium" /></div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">Images (Couleurs / Vues)</label>
+                <input type="file" multiple accept="image/*" onChange={e => setImageFiles(Array.from(e.target.files || []))} className="w-full cursor-pointer rounded-xl border border-border bg-background px-3 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:px-3 file:py-1 file:text-xs file:font-medium" />
+                {imageFiles.length > 0 && <p className="text-xs text-muted-foreground mt-2">{imageFiles.length} fichier(s) sélectionné(s)</p>}
+                {form.colors.length > 0 && (
+                  <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
+                    {form.colors.map((c, i) => (
+                      <div key={i} className="relative size-12 shrink-0 rounded-md border border-border overflow-hidden">
+                        <img src={c} alt="" className="size-full object-cover" />
+                        <button type="button" onClick={() => setForm(f=>({...f,colors:f.colors.filter((_,idx)=>idx!==i)}))} className="absolute top-0 right-0 bg-red-500 text-white rounded-bl-md p-0.5" title="Supprimer">
+                          <X className="size-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="flex justify-end gap-3 pt-2 border-t border-border">
                 <button type="button" onClick={() => setShowForm(false)} className="rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-muted transition">Annuler</button>
                 <button type="submit" className="rounded-xl px-5 py-2 text-sm font-semibold text-white hover:opacity-90" style={{ backgroundColor: '#c8a25d' }}>{editing ? 'Enregistrer' : 'Créer'}</button>

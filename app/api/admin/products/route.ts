@@ -19,13 +19,17 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { name, description, price, image, stock, category } = body;
+  const { name, description, price, image, stock, category, sizes, colors } = body;
   if (!name || price == null) return NextResponse.json({ error: 'name and price required' }, { status: 400 });
   const newId = Date.now().toString();
   const inStock = Number(stock ?? 0) > 0 ? 1 : 0;
+  
+  const sizesJson = Array.isArray(sizes) ? JSON.stringify(sizes) : '[]';
+  const colorsJson = Array.isArray(colors) ? JSON.stringify(colors) : '[]';
+
   await pool.execute(
     'INSERT INTO products (id, name, description, price, image, in_stock, category, audience, sizes, colors) VALUES (?,?,?,?,?,?,?,?,?,?)',
-    [newId, name, description ?? null, Number(price), image ?? null, inStock, category ?? null, '[]', '[]', '[]']
+    [newId, name, description ?? null, Number(price), image ?? null, inStock, category ?? null, '[]', sizesJson, colorsJson]
   );
   return NextResponse.json({ id: newId }, { status: 201 });
 }
