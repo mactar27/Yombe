@@ -4,12 +4,13 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, Users, ShoppingCart, ArrowLeft } from 'lucide-react'
+import { LayoutDashboard, Package, Users, ShoppingCart, ArrowLeft, Settings } from 'lucide-react'
 
 const sideLinks = [
   { href: '/admin/products', label: 'Produits', icon: Package },
   { href: '/admin/clients', label: 'Clients', icon: Users },
   { href: '/admin/orders', label: 'Commandes', icon: ShoppingCart },
+  { href: '/admin/settings', label: 'Paramètres', icon: Settings },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

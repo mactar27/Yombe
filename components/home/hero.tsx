@@ -2,8 +2,22 @@ import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import pool from "@/lib/db"
 
-export function Hero() {
+export async function Hero() {
+  let heroImage1 = "/placeholder.svg?height=640&width=480"
+  let heroImage2 = "/placeholder.svg?height=640&width=480"
+
+  try {
+    const [rows] = await pool.execute("SELECT key_name, value FROM settings WHERE key_name IN ('hero_image_1', 'hero_image_2')")
+    for (const row of rows as any[]) {
+      if (row.key_name === 'hero_image_1' && row.value) heroImage1 = row.value
+      if (row.key_name === 'hero_image_2' && row.value) heroImage2 = row.value
+    }
+  } catch (error) {
+    console.error("Hero settings fetch error:", error)
+  }
+
   return (
     <section className="section-dark relative overflow-hidden">
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-2 lg:px-8">
@@ -54,7 +68,7 @@ export function Hero() {
           <div className="grid grid-cols-2 gap-4">
             <div className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-white/10">
               <Image
-                src="/placeholder.svg?height=640&width=480"
+                src={heroImage1}
                 alt="Vêtements tendance"
                 fill
                 className="object-cover"
@@ -64,7 +78,7 @@ export function Hero() {
             </div>
             <div className="relative mt-8 aspect-[3/4] overflow-hidden rounded-2xl border border-white/10">
               <Image
-                src="/placeholder.svg?height=640&width=480"
+                src={heroImage2}
                 alt="Maillots de football"
                 fill
                 className="object-cover"
