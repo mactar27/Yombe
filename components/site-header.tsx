@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
-import { Heart, Menu, Search, ShoppingBag, User, LogOut } from "lucide-react"
+import { Heart, Menu, Search, ShoppingBag, User, LogOut, LayoutDashboard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { CartSheet } from "@/components/cart-sheet"
@@ -101,6 +101,18 @@ export function SiteHeader() {
           </Button>
           {user ? (
             <>
+              {user.role === 'admin' && (
+                <Button
+                  render={<Link href="/admin" />}
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Tableau de bord admin"
+                  title="Tableau de bord admin"
+                  className="text-primary"
+                >
+                  <LayoutDashboard className="size-5" />
+                </Button>
+              )}
               <Button render={<Link href="/compte" />} variant="ghost" size="icon" aria-label="Mon compte" title="Mon espace client">
                 <User className="size-5" />
               </Button>
