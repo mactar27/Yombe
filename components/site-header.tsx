@@ -100,15 +100,20 @@ export function SiteHeader() {
             <Heart className="size-5" />
           </Button>
           {user ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Déconnexion"
-              onClick={handleLogout}
-              title={`Connecté en tant que ${user.name}`}
-            >
-              <LogOut className="size-5" />
-            </Button>
+            <>
+              <Button render={<Link href="/compte" />} variant="ghost" size="icon" aria-label="Mon compte" title="Mon espace client">
+                <User className="size-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Déconnexion"
+                onClick={handleLogout}
+                title={`Déconnexion (${user.name})`}
+              >
+                <LogOut className="size-5" />
+              </Button>
+            </>
           ) : (
             <Button render={<Link href="/connexion" />} variant="ghost" size="icon" aria-label="Mon compte">
               <User className="size-5" />
