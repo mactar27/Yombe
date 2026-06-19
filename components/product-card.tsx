@@ -13,6 +13,9 @@ export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart()
   const [liked, setLiked] = useState(false)
   const [imageIdx, setImageIdx] = useState(0)
+  const [selectedSize, setSelectedSize] = useState<string | null>(
+    Array.isArray(product.sizes) && product.sizes.length > 0 ? product.sizes[0] : null
+  )
 
   const images = Array.isArray(product.colors) && product.colors.length > 0 
     ? product.colors 
@@ -90,26 +93,46 @@ export function ProductCard({ product }: { product: Product }) {
             />
           ))}
         </div>
-        <div className="mt-auto flex items-end justify-between gap-2 pt-2">
-          <div className="flex flex-col">
-            {product.oldPrice && (
-              <span className="text-xs text-muted-foreground line-through">
-                {formatPrice(product.oldPrice)}
+        <div className="mt-auto flex flex-col gap-3 pt-2">
+          {Array.isArray(product.sizes) && product.sizes.length > 0 && product.sizes[0] !== "Unique" && (
+            <div className="flex flex-wrap gap-1.5">
+              {product.sizes.map((size: string) => (
+                <button
+                  key={size}
+                  onClick={() => setSelectedSize(size)}
+                  className={cn(
+                    "rounded-md border px-2 py-0.5 text-xs font-medium transition-colors",
+                    selectedSize === size
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground"
+                  )}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="flex items-end justify-between gap-2">
+            <div className="flex flex-col">
+              {product.oldPrice && (
+                <span className="text-xs text-muted-foreground line-through">
+                  {formatPrice(product.oldPrice)}
+                </span>
+              )}
+              <span className="font-serif text-lg font-bold text-foreground">
+                {formatPrice(product.price)}
               </span>
-            )}
-            <span className="font-serif text-lg font-bold text-foreground">
-              {formatPrice(product.price)}
-            </span>
+            </div>
+            <Button
+              size="sm"
+              disabled={!product.inStock || !selectedSize}
+              onClick={() => selectedSize && addItem(product, selectedSize, currentImage)}
+              className="gap-1"
+            >
+              <Plus className="size-4" />
+              Ajouter
+            </Button>
           </div>
-          <Button
-            size="sm"
-            disabled={!product.inStock}
-            onClick={() => addItem(product, product.sizes[0], currentImage)}
-            className="gap-1"
-          >
-            <Plus className="size-4" />
-            Ajouter
-          </Button>
         </div>
       </div>
     </div>
