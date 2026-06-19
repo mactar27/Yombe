@@ -17,7 +17,14 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Protect /compte - any logged in user
+  // Protect checkout /panier/paiement
+  if (pathname.startsWith('/panier/paiement')) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/connexion?redirect=/panier/paiement', request.url))
+    }
+  }
+
+  // Protect /compte
   if (pathname.startsWith('/compte')) {
     if (!user) {
       return NextResponse.redirect(new URL('/connexion', request.url))
@@ -33,5 +40,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/compte/:path*', '/connexion'],
+  matcher: ['/admin/:path*', '/compte/:path*', '/connexion', '/panier/paiement'],
 }

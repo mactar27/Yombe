@@ -1,114 +1,178 @@
-import type { Metadata } from "next"
-import Link from "next/link"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useCart } from "@/components/cart-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Separator } from "@/components/ui/separator"
-import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
+import { formatPrice } from "@/lib/data"
+import { CheckCircle2, Loader2, MapPin, Phone } from "lucide-react"
 
-export const metadata: Metadata = {
-  title: "Paiement | Yombe Ctyi 313",
-  description: "Finalisez votre commande.",
-}
+export default function CheckoutPage() {
+  const router = useRouter()
+  const { items, subtotal, clear } = useCart()
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-export default async function PaiementPage() {
-  const cookieStore = await cookies()
-  const authCookie = cookieStore.get("auth_user")
+  const [address, setAddress] = useState("")
+  const [phone, setPhone] = useState("")
 
-  if (!authCookie) {
-    redirect("/connexion")
+  const discount = 0
+  const shipping = items.length > 0 ? 2000 : 0
+  const total = subtotal - discount + shipping
+
+  useEffect(() => {
+    if (items.length === 0 && !success) {
+      router.push("/boutique")
+    }
+  }, [items, success, router])
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items,
+          total,
+          address,
+          phone
+        })
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Une erreur est survenue")
+      }
+
+      setSuccess(true)
+      clear()
+      
+      setTimeout(() => {
+        router.push("/compte")
+      }, 3000)
+
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  let authUser
-  try {
-    authUser = JSON.parse(authCookie.value)
-  } catch (e) {
-    redirect("/connexion")
+  if (success) {
+    return (
+      <div className="mx-auto flex max-w-lg flex-col items-center justify-center py-24 text-center px-4">
+        <CheckCircle2 className="size-20 text-primary mb-6" />
+        <h1 className="font-serif text-3xl font-bold mb-2">Commande validée !</h1>
+        <p className="text-muted-foreground mb-8">
+          Votre commande a été enregistrée avec succès. Vous recevrez un appel pour la livraison.
+        </p>
+        <p className="text-sm">Redirection vers votre espace client...</p>
+      </div>
+    )
   }
+
+  if (items.length === 0) return null
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
-        <div className="max-w-3xl">
-          <h1 className="font-serif text-3xl font-bold mb-8">Finaliser la commande</h1>
-          
-          <div className="space-y-8">
-            {/* Informations de livraison */}
-            <section className="rounded-2xl border border-border bg-card p-6">
-              <h2 className="font-serif text-xl font-bold mb-4">Informations de livraison</h2>
-              <form className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Nom complet</Label>
-                  <Input id="name" name="name" defaultValue={authUser.name} />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="phone">Téléphone</Label>
-                  <Input id="phone" name="phone" type="tel" placeholder="78 400 79 43" />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="address">Adresse complète</Label>
-                  <Textarea id="address" name="address" rows={3} placeholder="Votre adresse complète à Ziguinchor" />
-                </div>
-              </form>
-            </section>
-
-            {/* Mode de paiement */}
-            <section className="rounded-2xl border border-border bg-card p-6">
-              <h2 className="font-serif text-xl font-bold mb-4">Mode de paiement</h2>
-              <div className="space-y-3">
-                <label className="flex items-center gap-3 rounded-lg border border-border p-4 cursor-pointer hover:border-primary transition-colors">
-                  <input type="radio" name="payment" value="wave" className="size-4" defaultChecked />
-                  <span className="font-medium">Wave</span>
-                </label>
-                <label className="flex items-center gap-3 rounded-lg border border-border p-4 cursor-pointer hover:border-primary transition-colors">
-                  <input type="radio" name="payment" value="orange" className="size-4" />
-                  <span className="font-medium">Orange Money</span>
-                </label>
-                <label className="flex items-center gap-3 rounded-lg border border-border p-4 cursor-pointer hover:border-primary transition-colors">
-                  <input type="radio" name="payment" value="delivery" className="size-4" />
-                  <span className="font-medium">Paiement à la livraison</span>
-                </label>
+    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+      <h1 className="font-serif text-3xl font-bold mb-8">Finaliser la commande</h1>
+      
+      <div className="grid gap-8 md:grid-cols-2">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div className="rounded-2xl border border-border bg-card p-6">
+            <h2 className="font-serif text-xl font-bold mb-4">Informations de livraison</h2>
+            
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="address" className="flex items-center gap-2">
+                  <MapPin className="size-4" /> Adresse complète
+                </Label>
+                <Input
+                  id="address"
+                  required
+                  placeholder="Quartier, rue, détails..."
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
               </div>
-            </section>
 
-            {/* Récapitulatif */}
-            <section className="rounded-2xl border border-border bg-card p-6">
-              <h2 className="font-serif text-xl font-bold mb-4">Récapitulatif</h2>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Sous-total</span>
-                  <span>À calculer</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Livraison</span>
-                  <span>2 000 FCFA</span>
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Total</span>
-                  <span className="font-serif text-2xl font-bold">À calculer</span>
-                </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="phone" className="flex items-center gap-2">
+                  <Phone className="size-4" /> Numéro de téléphone de réception
+                </Label>
+                <Input
+                  id="phone"
+                  required
+                  type="tel"
+                  placeholder="+221 ..."
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
               </div>
-            </section>
+            </div>
+          </div>
 
-            <Button size="lg" className="w-full">
-              Confirmer la commande
-            </Button>
+          <div className="rounded-2xl border border-border bg-card p-6 flex flex-col gap-4">
+            <h2 className="font-serif text-xl font-bold">Paiement</h2>
+            <div className="rounded-lg bg-muted p-4">
+              <p className="font-medium text-sm">Paiement à la livraison</p>
+              <p className="text-xs text-muted-foreground mt-1">Vous paierez en espèces lors de la réception de votre commande.</p>
+            </div>
 
-            <Button render={<Link href="/panier" />} variant="ghost" className="w-full">
-              Retour au panier
+            {error && (
+              <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>
+            )}
+
+            <Button type="submit" size="lg" className="w-full mt-4" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Traitement...
+                </>
+              ) : (
+                "Valider ma commande"
+              )}
             </Button>
           </div>
+        </form>
+
+        <div className="rounded-2xl border border-border bg-muted/50 p-6 h-fit">
+          <h2 className="font-serif text-xl font-bold mb-4">Résumé</h2>
+          <ul className="flex flex-col gap-3 mb-6">
+            {items.map((item) => (
+              <li key={`${item.product.id}-${item.size}`} className="flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {item.quantity}x {item.product.name} {item.size && `(${item.size})`}
+                </span>
+                <span className="font-medium">{formatPrice(item.product.price * item.quantity)}</span>
+              </li>
+            ))}
+          </ul>
+          
+          <div className="flex flex-col gap-2 text-sm border-t border-border pt-4">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Sous-total</span>
+              <span>{formatPrice(subtotal)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Livraison</span>
+              <span>{formatPrice(shipping)}</span>
+            </div>
+            <div className="flex justify-between font-serif text-lg font-bold mt-2">
+              <span>Total</span>
+              <span>{formatPrice(total)}</span>
+            </div>
+          </div>
         </div>
-      </main>
-      <SiteFooter />
+      </div>
     </div>
   )
 }

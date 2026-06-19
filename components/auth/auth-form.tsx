@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export function AuthForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get("redirect")
   const [tab, setTab] = useState("connexion")
 
   // Login state
@@ -45,7 +47,7 @@ export function AuthForm() {
         if (data.user.role === "admin") {
           router.push("/admin")
         } else {
-          router.push("/compte")
+          router.push(redirectUrl || "/compte")
         }
         router.refresh()
       }
@@ -91,7 +93,7 @@ export function AuthForm() {
       if (!res.ok) {
         setRegError(data.error || "Erreur lors de l'inscription")
       } else {
-        router.push("/compte")
+        router.push(redirectUrl || "/compte")
         router.refresh()
       }
     } catch {

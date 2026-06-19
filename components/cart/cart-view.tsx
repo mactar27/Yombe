@@ -18,16 +18,6 @@ export function CartView() {
   const discount = applied ? Math.round(subtotal * 0.1) : 0
   const shipping = items.length > 0 ? 2000 : 0
   const total = subtotal - discount + shipping
-
-  const checkoutUrl = `https://wa.me/221784007943?text=${encodeURIComponent(
-    `Bonjour, je souhaite passer une commande :\n\n` +
-    items.map(i => `- ${i.quantity}x ${i.product.name} ${i.size ? `(Taille: ${i.size})` : ''} - ${formatPrice(i.product.price * i.quantity)}`).join('\n') +
-    `\n\nSous-total: ${formatPrice(subtotal)}` +
-    (discount > 0 ? `\nRéduction: -${formatPrice(discount)}` : '') +
-    `\nLivraison: ${formatPrice(shipping)}` +
-    `\n*Total: ${formatPrice(total)}*`
-  )}`;
-
   if (items.length === 0) {
     return (
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-6 px-4 py-24 text-center">
@@ -163,10 +153,10 @@ export function CartView() {
             <span className="font-serif text-2xl font-bold">{formatPrice(total)}</span>
           </div>
 
-          <Button asChild size="lg" className="w-full bg-green-600 hover:bg-green-700 text-white">
-            <a href={checkoutUrl} target="_blank" rel="noopener noreferrer">
-              Commander sur WhatsApp
-            </a>
+          <Button asChild size="lg" className="w-full">
+            <Link href="/panier/paiement">
+              Commander
+            </Link>
           </Button>
           <Button render={<Link href="/boutique" />} variant="ghost" className="w-full">
             Continuer mes achats
