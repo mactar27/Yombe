@@ -4,18 +4,20 @@ import bcrypt from 'bcrypt'
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, phone, email, password } = await req.json()
+    const { name, phone, password } = await req.json()
 
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 })
+    if (!name || !phone || !password) {
+      return NextResponse.json({ error: 'Nom, téléphone et mot de passe requis' }, { status: 400 })
     }
 
-    // Ensure tables exist
+    const normalizedPhone = phone.replace(/\s+/g, '')
+
+    // Ensure users table supports phone-based auth
     await pool.execute(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL UNIQUE,
+        phone VARCHAR(50) NOT NULL UNIQUE,
         password_hash VARCHAR(255) NOT NULL,
         role VARCHAR(50) DEFAULT 'client',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -33,41 +35,39 @@ export async function POST(req: NextRequest) {
       )
     `)
 
-    // Check if user already exists
+    // Check if phone already taken
     const [existing] = await pool.execute(
-      'SELECT id FROM users WHERE email = ?',
-      [email]
+      'SELECT id FROM users WHERE REPLACE(phone, " ", "") = ?',
+      [normalizedPhone]
     ) as any[]
 
     if (existing.length > 0) {
-      return NextResponse.json({ error: 'Cet email est déjà utilisé' }, { status: 409 })
+      return NextResponse.json({ error: 'Ce numéro de téléphone est déjà utilisé' }, { status: 409 })
     }
 
     const hash = await bcrypt.hash(password, 10)
 
-    // Insert user
     const [userResult] = await pool.execute(
-      'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
-      [name, email, hash, 'client']
+      'INSERT INTO users (name, phone, password_hash, role) VALUES (?, ?, ?, ?)',
+      [name, normalizedPhone, hash, 'client']
     ) as any[]
 
-    // Insert client
+    // Also insert into clients table
     await pool.execute(
-      'INSERT INTO clients (name, email, phone) VALUES (?, ?, ?)',
-      [name, email, phone || null]
+      'INSERT INTO clients (name, phone) VALUES (?, ?)',
+      [name, normalizedPhone]
     )
 
     const userId = userResult.insertId
 
     const res = NextResponse.json({
       success: true,
-      user: { id: userId, name, email, role: 'client' },
+      user: { id: userId, name, phone: normalizedPhone, role: 'client' },
     })
 
-    // Set cookie
     res.cookies.set('auth_user', JSON.stringify({ id: userId, name, role: 'client' }), {
       httpOnly: true,
-      maxAge: 60 * 60 * 24, // 24h
+      maxAge: 60 * 60 * 24 * 7,
       path: '/',
     })
 

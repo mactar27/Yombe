@@ -14,7 +14,7 @@ export function AuthForm() {
   const [tab, setTab] = useState("connexion")
 
   // Login state
-  const [loginEmail, setLoginEmail] = useState("")
+  const [loginPhone, setLoginPhone] = useState("")
   const [loginPassword, setLoginPassword] = useState("")
   const [loginError, setLoginError] = useState<string | null>(null)
   const [loginLoading, setLoginLoading] = useState(false)
@@ -22,7 +22,6 @@ export function AuthForm() {
   // Signup state
   const [regName, setRegName] = useState("")
   const [regPhone, setRegPhone] = useState("")
-  const [regEmail, setRegEmail] = useState("")
   const [regPassword, setRegPassword] = useState("")
   const [regConfirm, setRegConfirm] = useState("")
   const [regError, setRegError] = useState<string | null>(null)
@@ -36,7 +35,7 @@ export function AuthForm() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+        body: JSON.stringify({ phone: loginPhone, password: loginPassword }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -47,6 +46,7 @@ export function AuthForm() {
         } else {
           router.push("/compte")
         }
+        router.refresh()
       }
     } catch {
       setLoginError("Une erreur est survenue. Veuillez réessayer.")
@@ -58,9 +58,14 @@ export function AuthForm() {
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
     setRegError(null)
-    
+
     if (regPassword !== regConfirm) {
       setRegError("Les mots de passe ne correspondent pas.")
+      return
+    }
+
+    if (regPassword.length < 6) {
+      setRegError("Le mot de passe doit contenir au moins 6 caractères.")
       return
     }
 
@@ -69,13 +74,14 @@ export function AuthForm() {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: regName, phone: regPhone, email: regEmail, password: regPassword }),
+        body: JSON.stringify({ name: regName, phone: regPhone, password: regPassword }),
       })
       const data = await res.json()
       if (!res.ok) {
         setRegError(data.error || "Erreur lors de l'inscription")
       } else {
         router.push("/compte")
+        router.refresh()
       }
     } catch {
       setRegError("Une erreur est survenue. Veuillez réessayer.")
@@ -103,14 +109,14 @@ export function AuthForm() {
             className="mt-6 flex flex-col gap-4 rounded-2xl border border-border bg-card p-6"
           >
             <div className="flex flex-col gap-2">
-              <Label htmlFor="login-email">Email</Label>
+              <Label htmlFor="login-phone">Numéro de téléphone</Label>
               <Input
-                id="login-email"
-                type="email"
+                id="login-phone"
+                type="tel"
                 required
-                placeholder="vous@exemple.com"
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
+                placeholder="+221 77 000 00 00"
+                value={loginPhone}
+                onChange={(e) => setLoginPhone(e.target.value)}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -152,12 +158,8 @@ export function AuthForm() {
               <Input id="reg-name" required placeholder="Votre nom" value={regName} onChange={e => setRegName(e.target.value)} />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="reg-phone">Téléphone</Label>
-              <Input id="reg-phone" type="tel" required placeholder="+221 ..." value={regPhone} onChange={e => setRegPhone(e.target.value)} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="reg-email">Email</Label>
-              <Input id="reg-email" type="email" required placeholder="vous@exemple.com" value={regEmail} onChange={e => setRegEmail(e.target.value)} />
+              <Label htmlFor="reg-phone">Numéro de téléphone</Label>
+              <Input id="reg-phone" type="tel" required placeholder="+221 77 000 00 00" value={regPhone} onChange={e => setRegPhone(e.target.value)} />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="reg-password">Mot de passe</Label>
@@ -185,5 +187,3 @@ export function AuthForm() {
     </div>
   )
 }
-
-
