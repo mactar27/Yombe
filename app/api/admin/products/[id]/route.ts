@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const [rows] = await pool.execute('SELECT * FROM products WHERE id = ?', [params.id]);
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const [rows] = await pool.execute('SELECT * FROM products WHERE id = ?', [id]);
   const product = (rows as any)[0];
   if (!product) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json(product);
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const body = await request.json();
   const fields: string[] = [];
   const values: any[] = [];
@@ -25,12 +27,13 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
   }
   if (!fields.length) return NextResponse.json({ error: 'No fields' }, { status: 400 });
-  values.push(params.id);
+  values.push(id);
   await pool.execute('UPDATE products SET ' + fields.join(',') + ' WHERE id = ?', values);
   return NextResponse.json({ success: true });
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
-  await pool.execute('DELETE FROM products WHERE id = ?', [params.id]);
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  await pool.execute('DELETE FROM products WHERE id = ?', [id]);
   return NextResponse.json({ success: true });
 }
