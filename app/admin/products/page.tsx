@@ -16,6 +16,8 @@ export default function AdminProductsPage() {
   const [editing, setEditing] = useState<Product | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const limit = 10
   const fetchProducts = useCallback(async () => {
     setLoading(true)
@@ -48,28 +50,41 @@ export default function AdminProductsPage() {
   }
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    let uploadedUrls: string[] = []
-    
-    if (imageFiles.length > 0) {
-      for (const file of imageFiles) {
-        const fd = new FormData(); fd.append('file', file)
-        const up = await fetch('/api/upload', { method: 'POST', body: fd })
-        const upData = await up.json();
-        if (upData.url) uploadedUrls.push(upData.url)
+    setSubmitting(true)
+    setSubmitError('')
+    try {
+      let uploadedUrls: string[] = []
+      
+      if (imageFiles.length > 0) {
+        for (const file of imageFiles) {
+          const fd = new FormData(); fd.append('file', file)
+          const up = await fetch('/api/upload', { method: 'POST', body: fd })
+          const upData = await up.json();
+          if (upData.url) uploadedUrls.push(upData.url)
+        }
       }
-    }
-    
-    let finalColors = [...form.colors, ...uploadedUrls]
-    let finalImage = finalColors.length > 0 ? finalColors[0] : form.image
-    let finalSizes = form.sizes
+      
+      let finalColors = [...form.colors, ...uploadedUrls]
+      let finalImage = finalColors.length > 0 ? finalColors[0] : form.image
+      let finalSizes = form.sizes
 
-    const body = { name: form.name, description: form.description || null, price: Number(form.price), stock: Number(form.stock), category: form.category || null, image: finalImage || null, sizes: finalSizes, colors: finalColors }
-    if (editing) {
-      await fetch('/api/admin/products/' + editing.id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-    } else {
-      await fetch('/api/admin/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      const body = { name: form.name, description: form.description || null, price: Number(form.price), stock: Number(form.stock), category: form.category || null, image: finalImage || null, sizes: finalSizes, colors: finalColors }
+      let res;
+      if (editing) {
+        res = await fetch('/api/admin/products/' + editing.id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      } else {
+        res = await fetch('/api/admin/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      }
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || `Erreur HTTP ${res.status}`)
+      }
+      setShowForm(false); fetchProducts()
+    } catch (err: any) {
+      setSubmitError(err.message || 'Une erreur est survenue')
+    } finally {
+      setSubmitting(false)
     }
-    setShowForm(false); fetchProducts()
   }
   async function handleDelete(id: number) {
     if (!confirm('Supprimer ce produit ?')) return
@@ -203,9 +218,10 @@ export default function AdminProductsPage() {
                   </div>
                 )}
               </div>
+              {submitError && <p className="rounded-xl bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-600">{submitError}</p>}
               <div className="flex justify-end gap-3 pt-2 border-t border-border">
                 <button type="button" onClick={() => setShowForm(false)} className="rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-muted transition">Annuler</button>
-                <button type="submit" className="rounded-xl px-5 py-2 text-sm font-semibold text-white hover:opacity-90" style={{ backgroundColor: '#c8a25d' }}>{editing ? 'Enregistrer' : 'Créer'}</button>
+                <button type="submit" disabled={submitting} className="rounded-xl px-5 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60" style={{ backgroundColor: '#c8a25d' }}>{submitting ? 'Enregistrement...' : (editing ? 'Enregistrer' : 'Créer')}</button>
               </div>
             </form>
           </div>
