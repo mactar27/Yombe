@@ -9,7 +9,7 @@ import { WhyUs } from "@/components/home/why-us"
 import { Testimonials } from "@/components/home/testimonials"
 import { Contact } from "@/components/home/contact"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 60 // Refresh every 60 seconds
 
 export default function HomePage() {
   return (
