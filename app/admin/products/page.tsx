@@ -2,7 +2,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, X } from 'lucide-react'
 type Product = { id: number; name: string; description: string | null; price: number; image: string | null; in_stock: number; category: string | null; sizes: any; colors: any }
-type Product = { id: number; name: string; description: string | null; price: number; image: string | null; in_stock: number; category: string | null; sizes: any; colors: any }
 const emptyForm = { name: '', description: '', price: '', image: '', stock: '1', category: 'Maillots de clubs', sizes: [] as string[], colors: [] as string[] }
 const CATEGORIES = ["Maillots de clubs", "Maillots personnalisés", "Chaussures de football", "Équipements de gardien", "Vestes", "Ensembles", "Jeans", "Chemises", "Accessoires (Cônes, Cartons, etc.)"];
 const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
