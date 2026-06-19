@@ -9,8 +9,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { SectionHeading } from "@/components/section-heading"
 
 const contactInfos = [
-  { icon: Phone, label: "Téléphone", value: "+221 77 000 00 00", href: "tel:+221770000000" },
-  { icon: MessageCircle, label: "WhatsApp", value: "+221 77 000 00 00", href: "https://wa.me/221770000000" },
+  { icon: Phone, label: "Téléphone", value: "78 400 79 43", href: "tel:+221784007943" },
+  { icon: MessageCircle, label: "WhatsApp", value: "78 400 79 43", href: "https://wa.me/221784007943" },
   { icon: MapPin, label: "Adresse", value: "HPHC+M6J, R20, Ziguinchor", href: "#map" },
 ]
 

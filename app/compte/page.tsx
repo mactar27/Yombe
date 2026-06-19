@@ -38,13 +38,13 @@ const statusVariant: Record<string, string> = {
 }
 
 export default async function ComptePage() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const authCookie = cookieStore.get("auth_user")
-  
+
   if (!authCookie) {
     redirect("/connexion")
   }
-  
+
   let authUser;
   try {
     authUser = JSON.parse(authCookie.value)
@@ -53,8 +53,15 @@ export default async function ComptePage() {
   }
 
   // Fetch real user email
-  const [rows] = await pool.execute('SELECT email FROM users WHERE id = ?', [authUser.id]) as any[]
-  const userDetails = rows[0] || { email: 'Email non trouvé' }
+  let userDetails = { email: 'Email non trouvé' }
+  try {
+    const [rows] = await pool.execute('SELECT email FROM users WHERE id = ?', [authUser.id]) as any[]
+    if (rows && rows.length > 0) {
+      userDetails = rows[0]
+    }
+  } catch (error) {
+    console.error('Error fetching user email:', error)
+  }
 
   const initials = authUser.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
 

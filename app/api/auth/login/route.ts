@@ -16,17 +16,13 @@ export async function POST(req: NextRequest) {
 
     if (isEmail) {
       const [rows] = await pool.execute(
-        'SELECT id, name, email, phone, password_hash, role FROM users WHERE email = ?',
+        'SELECT id, name, email, password_hash, role FROM users WHERE email = ?',
         [identifier.trim().toLowerCase()]
       ) as any[]
       user = rows[0]
     } else {
-      const normalizedPhone = normalizePhone(identifier)
-      const [rows] = await pool.execute(
-        'SELECT id, name, email, phone, password_hash, role FROM users WHERE phone = ?',
-        [normalizedPhone]
-      ) as any[]
-      user = rows[0]
+      // Phone login not supported since users table doesn't have phone column
+      return NextResponse.json({ error: 'Veuillez utiliser votre email pour vous connecter' }, { status: 400 })
     }
 
     if (!user) {
