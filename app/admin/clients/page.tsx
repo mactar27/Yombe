@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { Search, ChevronLeft, ChevronRight, Trash2, User } from 'lucide-react'
-type Client = { id: number; name: string; email: string; phone: string | null; address: string | null }
+type Client = { id: number; name: string; email: string; phone: string | null; address: string | null; display_address?: string }
 export default function AdminClientsPage() {
   const [clients, setClients] = useState<Client[]>([])
   const [total, setTotal] = useState(0)
@@ -53,7 +53,7 @@ export default function AdminClientsPage() {
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">{c.email}</td>
                 <td className="px-4 py-3 text-muted-foreground">{c.phone ?? '—'}</td>
-                <td className="px-4 py-3 text-muted-foreground">{c.address ?? '—'}</td>
+                <td className="px-4 py-3 text-muted-foreground max-w-[200px] truncate" title={c.display_address ?? c.address ?? ''}>{c.display_address ?? c.address ?? '—'}</td>
                 <td className="px-4 py-3">
                   <button onClick={() => handleDelete(c.id)} className="rounded-lg p-2 text-muted-foreground hover:bg-red-50 hover:text-red-500 transition"><Trash2 className="size-4" /></button>
                 </td>

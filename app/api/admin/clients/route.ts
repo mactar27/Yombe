@@ -10,10 +10,12 @@ export async function GET(request: Request) {
   const where = search ? 'WHERE name LIKE ? OR email LIKE ?' : '';
   const values = search ? ['%' + search + '%', '%' + search + '%'] : [];
   const [rows] = await pool.execute(
-    'SELECT * FROM clients ' + where + ' ORDER BY id DESC LIMIT ' + limit + ' OFFSET ' + offset,
+    `SELECT c.*, 
+     COALESCE(c.address, (SELECT delivery_address FROM orders WHERE client_id = c.id ORDER BY created_at DESC LIMIT 1)) as display_address 
+     FROM clients c ` + where + ' ORDER BY c.id DESC LIMIT ' + limit + ' OFFSET ' + offset,
     values
   );
-  const [cnt] = await pool.execute('SELECT COUNT(*) as total FROM clients ' + where, values);
+  const [cnt] = await pool.execute('SELECT COUNT(*) as total FROM clients c ' + where, values);
   return NextResponse.json({ data: rows, total: (cnt as any)[0].total, page, limit });
 }
 
