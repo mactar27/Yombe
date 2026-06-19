@@ -4,7 +4,7 @@ import { SiteFooter } from "@/components/site-footer"
 import { ShopView } from "@/components/shop/shop-view"
 import { getProducts, getMaxPrice } from "@/lib/queries"
 
-export const revalidate = 60 // Refresh every 60 seconds
+export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
   title: "Boutique | Yombe Ctyi 313",
