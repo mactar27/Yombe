@@ -113,9 +113,18 @@ export default function AdminProductsPage() {
       setSubmitting(false)
     }
   }
-  async function handleDelete(id: number) {
+  async function handleDelete(id: number | string) {
     if (!confirm('Supprimer ce produit ?')) return
-    await fetch('/api/admin/products/' + id, { method: 'DELETE' }); fetchProducts()
+    try {
+      const res = await fetch('/api/admin/products/' + id, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Erreur HTTP ${res.status}`);
+      }
+      fetchProducts();
+    } catch (err: any) {
+      alert(`Erreur lors de la suppression : ${err.message}`);
+    }
   }
   const totalPages = Math.ceil(total / limit)
   return (
