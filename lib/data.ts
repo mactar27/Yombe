@@ -1,5 +1,5 @@
 // Types TypeScript — conservés pour tout le projet
-export type Audience = "homme" | "femme" | "enfant" | "football" | "accessoires"
+export type Audience = "homme" | "femme" | "enfant" | "football" | "accessoires" | "unisexe"
 
 export type Product = {
   id: string

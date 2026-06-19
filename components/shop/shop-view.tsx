@@ -22,6 +22,7 @@ const audienceFilters: { value: Audience; label: string }[] = [
   { value: "homme", label: "Homme" },
   { value: "femme", label: "Femme" },
   { value: "enfant", label: "Enfant" },
+  { value: "unisexe", label: "Unisexe" },
   { value: "football", label: "Football" },
   { value: "accessoires", label: "Accessoires" },
 ]
