@@ -36,11 +36,9 @@ type Props = {
 export function ShopView({ products, maxPrice }: Props) {
   const searchParams = useSearchParams()
   const allSizes = useMemo(() => Array.from(new Set(products.flatMap((p) => p.sizes))), [products])
-  const allColors = useMemo(() => Array.from(new Set(products.flatMap((p) => p.colors))), [products])
 
   const [audiences, setAudiences] = useState<Audience[]>([])
   const [sizes, setSizes] = useState<string[]>([])
-  const [colors, setColors] = useState<string[]>([])
   const [price, setPrice] = useState<number>(maxPrice)
   const [inStockOnly, setInStockOnly] = useState(false)
   const [sort, setSort] = useState<SortKey>("popularite")
@@ -63,7 +61,6 @@ export function ShopView({ products, maxPrice }: Props) {
     const result = products.filter((p) => {
       if (audiences.length && !audiences.some((a) => p.audience.includes(a))) return false
       if (sizes.length && !sizes.some((s) => p.sizes.includes(s))) return false
-      if (colors.length && !colors.some((c) => p.colors.includes(c))) return false
       if (p.price > price) return false
       if (inStockOnly && !p.inStock) return false
       return true
@@ -78,14 +75,13 @@ export function ShopView({ products, maxPrice }: Props) {
       default:
         return [...result].sort((a, b) => b.rating - a.rating)
     }
-  }, [audiences, sizes, colors, price, inStockOnly, sort, products])
+  }, [audiences, sizes, price, inStockOnly, sort, products])
 
-  const activeCount = audiences.length + sizes.length + colors.length + (inStockOnly ? 1 : 0)
+  const activeCount = audiences.length + sizes.length + (inStockOnly ? 1 : 0)
 
   const reset = () => {
     setAudiences([])
     setSizes([])
-    setColors([])
     setPrice(maxPrice)
     setInStockOnly(false)
   }
@@ -140,32 +136,6 @@ export function ShopView({ products, maxPrice }: Props) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <h3 className="font-serif text-base font-semibold">Couleur</h3>
-        <div className="flex flex-wrap gap-2">
-          {allColors.map((c) => (
-            <button
-              key={c}
-              type="button"
-              title={c.startsWith('http') || c.startsWith('/') ? 'Variante de couleur' : c}
-              onClick={() => toggle(c, colors, setColors)}
-              className={
-                "rounded-md border overflow-hidden transition-colors flex items-center justify-center " +
-                (c.startsWith('http') || c.startsWith('/') ? "size-8 p-0 " : "px-3 py-1.5 text-sm ") +
-                (colors.includes(c)
-                  ? "border-primary ring-2 ring-primary ring-offset-1"
-                  : "border-border hover:border-primary")
-              }
-            >
-              {(c.startsWith('http') || c.startsWith('/')) ? (
-                <img src={c} alt="Couleur" className="size-full object-cover" />
-              ) : (
-                c
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
 
       <label className="flex items-center gap-2.5 text-sm cursor-pointer">
         <Checkbox checked={inStockOnly} onCheckedChange={(v) => setInStockOnly(Boolean(v))} />
