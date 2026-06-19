@@ -2,7 +2,11 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, X } from 'lucide-react'
 type Product = { id: number; name: string; description: string | null; price: number; image: string | null; in_stock: number; category: string | null; sizes: any; colors: any }
-const emptyForm = { name: '', description: '', price: '', image: '', stock: '1', category: '', sizes: '', colors: [] as string[] }
+type Product = { id: number; name: string; description: string | null; price: number; image: string | null; in_stock: number; category: string | null; sizes: any; colors: any }
+const emptyForm = { name: '', description: '', price: '', image: '', stock: '1', category: 'Maillots de clubs', sizes: [] as string[], colors: [] as string[] }
+const CATEGORIES = ["Maillots de clubs", "Maillots personnalisés", "Chaussures de football", "Équipements de gardien", "Vestes", "Ensembles", "Jeans", "Chemises", "Accessoires (Cônes, Cartons, etc.)"];
+const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
+const SHOE_SIZES = Array.from({ length: 14 }, (_, i) => String(34 + i));
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [total, setTotal] = useState(0)
@@ -33,8 +37,15 @@ export default function AdminProductsPage() {
     let parsedColors = [];
     try { parsedColors = typeof p.colors === 'string' ? JSON.parse(p.colors) : (p.colors || []) } catch(e){}
     
-    setForm({ name: p.name, description: p.description ?? '', price: String(p.price), image: p.image ?? '', stock: String(p.in_stock), category: p.category ?? '', sizes: parsedSizes.join(', '), colors: parsedColors })
+    setForm({ name: p.name, description: p.description ?? '', price: String(p.price), image: p.image ?? '', stock: String(p.in_stock), category: p.category ?? CATEGORIES[0], sizes: parsedSizes, colors: parsedColors })
     setImageFiles([]); setShowForm(true)
+  }
+  
+  function toggleSize(size: string) {
+    setForm(f => ({
+      ...f,
+      sizes: f.sizes.includes(size) ? f.sizes.filter(s => s !== size) : [...f.sizes, size]
+    }))
   }
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -51,7 +62,7 @@ export default function AdminProductsPage() {
     
     let finalColors = [...form.colors, ...uploadedUrls]
     let finalImage = finalColors.length > 0 ? finalColors[0] : form.image
-    let finalSizes = form.sizes.split(',').map(s => s.trim()).filter(Boolean)
+    let finalSizes = form.sizes
 
     const body = { name: form.name, description: form.description || null, price: Number(form.price), stock: Number(form.stock), category: form.category || null, image: finalImage || null, sizes: finalSizes, colors: finalColors }
     if (editing) {
@@ -142,8 +153,38 @@ export default function AdminProductsPage() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="mb-1 block text-sm font-medium">Catégorie</label><input type="text" value={form.category} onChange={e => setForm(f=>({...f,category:e.target.value}))} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition" /></div>
-                <div><label className="mb-1 block text-sm font-medium">Tailles (séparées par une virgule)</label><input type="text" placeholder="S, M, L, XL" value={form.sizes} onChange={e => setForm(f=>({...f,sizes:e.target.value}))} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition" /></div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Catégorie</label>
+                  <select value={form.category} onChange={e => setForm(f=>({...f,category:e.target.value}))} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition">
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Tailles sélectionnées</label>
+                  <div className="flex flex-wrap gap-1.5 min-h-[38px] items-center">
+                    {form.sizes.length === 0 ? <span className="text-xs text-muted-foreground">Aucune taille</span> : form.sizes.map(s => (
+                      <span key={s} className="rounded-md bg-primary text-primary-foreground px-2 py-0.5 text-xs font-semibold">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3 p-3 rounded-xl border border-border bg-muted/30">
+                <div>
+                  <label className="text-xs font-semibold uppercase text-muted-foreground mb-2 block">Vêtements</label>
+                  <div className="flex flex-wrap gap-2">
+                    {CLOTHING_SIZES.map(s => (
+                      <button type="button" key={s} onClick={() => toggleSize(s)} className={`rounded-md border px-3 py-1 text-xs font-medium transition ${form.sizes.includes(s) ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary bg-background'}`}>{s}</button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold uppercase text-muted-foreground mb-2 block">Pointures</label>
+                  <div className="flex flex-wrap gap-2">
+                    {SHOE_SIZES.map(s => (
+                      <button type="button" key={s} onClick={() => toggleSize(s)} className={`rounded-md border px-2 py-1 text-xs font-medium transition ${form.sizes.includes(s) ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary bg-background'}`}>{s}</button>
+                    ))}
+                  </div>
+                </div>
               </div>
               <div><label className="mb-1 block text-sm font-medium">Description</label><textarea rows={2} value={form.description} onChange={e => setForm(f=>({...f,description:e.target.value}))} className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition" /></div>
               <div>
