@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { formatPrice } from "@/lib/data"
 import { getFeaturedProducts } from "@/lib/queries"
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
+import pool from "@/lib/db"
 
 export const metadata: Metadata = {
   title: "Mon espace | Yombe Ctyi 313",
@@ -34,6 +37,26 @@ const statusVariant: Record<string, string> = {
 }
 
 export default async function ComptePage() {
+  const cookieStore = cookies()
+  const authCookie = cookieStore.get("auth_user")
+  
+  if (!authCookie) {
+    redirect("/connexion")
+  }
+  
+  let authUser;
+  try {
+    authUser = JSON.parse(authCookie.value)
+  } catch (e) {
+    redirect("/connexion")
+  }
+
+  // Fetch real user email
+  const [rows] = await pool.execute('SELECT email FROM users WHERE id = ?', [authUser.id]) as any[]
+  const userDetails = rows[0] || { email: 'Email non trouvé' }
+
+  const initials = authUser.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
+
   const favorites = await getFeaturedProducts(3)
 
   return (
@@ -42,11 +65,11 @@ export default async function ComptePage() {
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4">
           <span className="flex size-14 items-center justify-center rounded-full bg-secondary font-serif text-xl font-bold text-primary">
-            AD
+            {initials}
           </span>
           <div>
-            <h1 className="font-serif text-2xl font-bold">Awa Diédhiou</h1>
-            <p className="text-sm text-muted-foreground">awa.diedhiou@exemple.com</p>
+            <h1 className="font-serif text-2xl font-bold">{authUser.name}</h1>
+            <p className="text-sm text-muted-foreground">{userDetails.email}</p>
           </div>
         </div>
 
