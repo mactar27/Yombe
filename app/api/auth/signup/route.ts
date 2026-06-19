@@ -5,42 +5,51 @@ import { normalizePhone } from '@/lib/normalize-phone'
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, phone, password } = await req.json()
+    const { name, phone, email, password } = await req.json()
 
-    if (!name || !phone || !password) {
-      return NextResponse.json({ error: 'Nom, téléphone et mot de passe requis' }, { status: 400 })
+    if (!name || !password) {
+      return NextResponse.json({ error: 'Nom et mot de passe requis' }, { status: 400 })
+    }
+    if (!phone && !email) {
+      return NextResponse.json({ error: 'Un numéro de téléphone ou un email est requis' }, { status: 400 })
     }
 
-    const normalizedPhone = normalizePhone(phone)
+    const normalizedPhone = phone ? normalizePhone(phone) : null
+    const normalizedEmail = email ? email.trim().toLowerCase() : null
 
-    // Check if phone already taken
-    const [existing] = await pool.execute(
-      'SELECT id FROM users WHERE phone = ?',
-      [normalizedPhone]
-    ) as any[]
+    // Check for duplicate phone
+    if (normalizedPhone) {
+      const [existing] = await pool.execute('SELECT id FROM users WHERE phone = ?', [normalizedPhone]) as any[]
+      if (existing.length > 0) {
+        return NextResponse.json({ error: 'Ce numéro de téléphone est déjà utilisé' }, { status: 409 })
+      }
+    }
 
-    if (existing.length > 0) {
-      return NextResponse.json({ error: 'Ce numéro de téléphone est déjà utilisé' }, { status: 409 })
+    // Check for duplicate email
+    if (normalizedEmail) {
+      const [existing] = await pool.execute('SELECT id FROM users WHERE email = ?', [normalizedEmail]) as any[]
+      if (existing.length > 0) {
+        return NextResponse.json({ error: 'Cet email est déjà utilisé' }, { status: 409 })
+      }
     }
 
     const hash = await bcrypt.hash(password, 10)
 
     const [userResult] = await pool.execute(
-      'INSERT INTO users (name, phone, password_hash, role) VALUES (?, ?, ?, ?)',
-      [name, normalizedPhone, hash, 'client']
+      'INSERT INTO users (name, phone, email, password_hash, role) VALUES (?, ?, ?, ?, ?)',
+      [name, normalizedPhone, normalizedEmail, hash, 'client']
     ) as any[]
 
-    // Also insert into clients table
     await pool.execute(
-      'INSERT INTO clients (name, phone) VALUES (?, ?)',
-      [name, normalizedPhone]
+      'INSERT INTO clients (name, phone, email) VALUES (?, ?, ?)',
+      [name, normalizedPhone, normalizedEmail]
     )
 
     const userId = userResult.insertId
 
     const res = NextResponse.json({
       success: true,
-      user: { id: userId, name, phone: normalizedPhone, role: 'client' },
+      user: { id: userId, name, phone: normalizedPhone, email: normalizedEmail, role: 'client' },
     })
 
     res.cookies.set('auth_user', JSON.stringify({ id: userId, name, role: 'client' }), {

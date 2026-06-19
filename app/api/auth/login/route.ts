@@ -5,32 +5,42 @@ import { normalizePhone } from '@/lib/normalize-phone'
 
 export async function POST(req: NextRequest) {
   try {
-    const { phone, password } = await req.json()
+    const { identifier, password } = await req.json()
 
-    if (!phone || !password) {
-      return NextResponse.json({ error: 'Téléphone et mot de passe requis' }, { status: 400 })
+    if (!identifier || !password) {
+      return NextResponse.json({ error: 'Identifiant et mot de passe requis' }, { status: 400 })
     }
 
-    const normalized = normalizePhone(phone)
+    const isEmail = identifier.includes('@')
+    let user: any = null
 
-    const [rows] = await pool.execute(
-      'SELECT id, name, phone, password_hash, role FROM users WHERE phone = ?',
-      [normalized]
-    ) as any[]
+    if (isEmail) {
+      const [rows] = await pool.execute(
+        'SELECT id, name, email, phone, password_hash, role FROM users WHERE email = ?',
+        [identifier.trim().toLowerCase()]
+      ) as any[]
+      user = rows[0]
+    } else {
+      const normalizedPhone = normalizePhone(identifier)
+      const [rows] = await pool.execute(
+        'SELECT id, name, email, phone, password_hash, role FROM users WHERE phone = ?',
+        [normalizedPhone]
+      ) as any[]
+      user = rows[0]
+    }
 
-    const user = rows[0]
     if (!user) {
-      return NextResponse.json({ error: 'Numéro ou mot de passe incorrect' }, { status: 401 })
+      return NextResponse.json({ error: 'Identifiant ou mot de passe incorrect' }, { status: 401 })
     }
 
     const valid = await bcrypt.compare(password, user.password_hash)
     if (!valid) {
-      return NextResponse.json({ error: 'Numéro ou mot de passe incorrect' }, { status: 401 })
+      return NextResponse.json({ error: 'Identifiant ou mot de passe incorrect' }, { status: 401 })
     }
 
     const res = NextResponse.json({
       success: true,
-      user: { id: user.id, name: user.name, phone: user.phone, role: user.role },
+      user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role },
     })
 
     res.cookies.set('auth_user', JSON.stringify({ id: user.id, name: user.name, role: user.role }), {
