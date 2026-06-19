@@ -21,9 +21,21 @@ export function ProductCard({ product }: { product: Product }) {
           alt={product.name}
           fill
           sizes="(max-width: 768px) 50vw, 25vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className={cn(
+            "object-cover transition-all duration-500 group-hover:scale-105",
+            product.colors?.length > 1 ? "group-hover:opacity-0" : ""
+          )}
         />
-        <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+        {product.colors?.length > 1 && (
+          <Image
+            src={product.colors[1]}
+            alt={product.name}
+            fill
+            sizes="(max-width: 768px) 50vw, 25vw"
+            className="absolute inset-0 object-cover opacity-0 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100"
+          />
+        )}
+        <div className="absolute left-3 top-3 flex flex-col gap-1.5 z-10">
           {product.isNew && <Badge className="bg-secondary text-secondary-foreground">Nouveau</Badge>}
           {product.isPromo && <Badge className="bg-primary text-primary-foreground">Promo</Badge>}
           {!product.inStock && (
