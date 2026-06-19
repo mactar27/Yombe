@@ -148,3 +148,58 @@ export async function createContactMessage(data: ContactMessageInput): Promise<{
   )
   return { id: (result as unknown as { insertId: number }).insertId }
 }
+
+// ─── User Orders ─────────────────────────────────────────────────────────────
+
+export type Order = {
+  id: number
+  clientId: number
+  status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled'
+  total: number
+  createdAt: Date
+}
+
+export async function getUserOrders(userId: number): Promise<Order[]> {
+  const rows = await query<RowDataPacket[]>(
+    `SELECT id, client_id as clientId, status, total, created_at as createdAt
+     FROM orders WHERE client_id = ?
+     ORDER BY created_at DESC`,
+    [userId]
+  )
+  return rows as Order[]
+}
+
+// ─── User Favorites ─────────────────────────────────────────────────────────
+
+export async function getUserFavorites(userId: number): Promise<Product[]> {
+  const rows = await query<RowDataPacket[]>(
+    `SELECT p.* FROM favorites f
+     JOIN products p ON f.product_id = p.id
+     WHERE f.user_id = ?
+     ORDER BY f.created_at DESC`,
+    [userId]
+  )
+  return rows.map(parseProduct)
+}
+
+export async function addFavorite(userId: number, productId: string): Promise<void> {
+  await query(
+    `INSERT INTO favorites (user_id, product_id) VALUES (?, ?)`,
+    [userId, productId]
+  )
+}
+
+export async function removeFavorite(userId: number, productId: string): Promise<void> {
+  await query(
+    `DELETE FROM favorites WHERE user_id = ? AND product_id = ?`,
+    [userId, productId]
+  )
+}
+
+export async function isFavorite(userId: number, productId: string): Promise<boolean> {
+  const rows = await query<RowDataPacket[]>(
+    `SELECT id FROM favorites WHERE user_id = ? AND product_id = ?`,
+    [userId, productId]
+  )
+  return rows.length > 0
+}

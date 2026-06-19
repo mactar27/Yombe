@@ -6,8 +6,8 @@ import { SiteFooter } from "@/components/site-footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { LogoutButton } from "@/app/compte/logout-button"
-import { formatPrice } from "@/lib/data"
-import { getFeaturedProducts } from "@/lib/queries"
+import { formatPrice, type Product } from "@/lib/data"
+import { getFeaturedProducts, getUserOrders, getUserFavorites, type Order } from "@/lib/queries"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import pool from "@/lib/db"
@@ -18,23 +18,27 @@ export const metadata: Metadata = {
 }
 
 const menu = [
-  { icon: User, label: "Profil", active: true },
-  { icon: Package, label: "Commandes" },
-  { icon: ShoppingBag, label: "Historique" },
-  { icon: MapPin, label: "Adresse" },
-  { icon: Heart, label: "Favoris" },
-]
-
-const orders = [
-  { id: "CMD-1042", date: "12 juin 2026", total: 43000, status: "Livrée" },
-  { id: "CMD-1038", date: "28 mai 2026", total: 18000, status: "Expédiée" },
-  { id: "CMD-1031", date: "14 mai 2026", total: 9000, status: "En attente" },
+  { icon: User, label: "Profil", href: "/compte/profil", active: true },
+  { icon: Package, label: "Commandes", href: "/compte/commandes" },
+  { icon: ShoppingBag, label: "Historique", href: "/compte/historique" },
+  { icon: MapPin, label: "Adresse", href: "/compte/adresse" },
+  { icon: Heart, label: "Favoris", href: "/compte/favoris" },
 ]
 
 const statusVariant: Record<string, string> = {
-  Livrée: "bg-primary text-primary-foreground",
-  Expédiée: "bg-secondary text-secondary-foreground",
-  "En attente": "bg-muted text-muted-foreground",
+  pending: "bg-muted text-muted-foreground",
+  paid: "bg-secondary text-secondary-foreground",
+  shipped: "bg-blue-500 text-white",
+  delivered: "bg-primary text-primary-foreground",
+  cancelled: "bg-destructive text-destructive-foreground",
+}
+
+const statusLabels: Record<string, string> = {
+  pending: "En attente",
+  paid: "Payée",
+  shipped: "Expédiée",
+  delivered: "Livrée",
+  cancelled: "Annulée",
 }
 
 export default async function ComptePage() {
@@ -65,7 +69,23 @@ export default async function ComptePage() {
 
   const initials = authUser.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
 
-  const favorites = await getFeaturedProducts(3)
+  // Fetch user orders
+  let orders: Order[] = []
+  try {
+    orders = await getUserOrders(authUser.id)
+  } catch (error) {
+    console.error('Error fetching user orders:', error)
+  }
+
+  // Fetch user favorites
+  let favorites: Product[] = []
+  try {
+    favorites = await getUserFavorites(authUser.id)
+  } catch (error) {
+    console.error('Error fetching user favorites:', error)
+    // Fallback to featured products if favorites table doesn't exist yet
+    favorites = await getFeaturedProducts(3)
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -84,8 +104,9 @@ export default async function ComptePage() {
         <div className="mt-8 grid gap-8 lg:grid-cols-[240px_1fr]">
           <aside className="flex h-fit flex-col gap-1 rounded-2xl border border-border bg-card p-3">
             {menu.map((item) => (
-              <button
+              <Link
                 key={item.label}
+                href={item.href}
                 className={
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors " +
                   (item.active
@@ -95,7 +116,7 @@ export default async function ComptePage() {
               >
                 <item.icon className="size-4" />
                 {item.label}
-              </button>
+              </Link>
             ))}
             <LogoutButton />
           </aside>
@@ -104,16 +125,22 @@ export default async function ComptePage() {
             <section className="rounded-2xl border border-border bg-card p-6">
               <h2 className="font-serif text-xl font-bold">Mes commandes</h2>
               <div className="mt-4 flex flex-col divide-y divide-border">
-                {orders.map((order) => (
-                  <div key={order.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                    <div>
-                      <p className="font-medium">{order.id}</p>
-                      <p className="text-sm text-muted-foreground">{order.date}</p>
+                {orders.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4">Aucune commande pour le moment</p>
+                ) : (
+                  orders.map((order) => (
+                    <div key={order.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                      <div>
+                        <p className="font-medium">CMD-{order.id}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(order.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <span className="font-serif font-semibold">{formatPrice(Number(order.total))}</span>
+                      <Badge className={statusVariant[order.status]}>{statusLabels[order.status]}</Badge>
                     </div>
-                    <span className="font-serif font-semibold">{formatPrice(order.total)}</span>
-                    <Badge className={statusVariant[order.status]}>{order.status}</Badge>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </section>
 
