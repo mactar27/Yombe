@@ -14,12 +14,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const body = await request.json();
   const fields: string[] = [];
   const values: any[] = [];
-  const allowed = ['name','description','price','image','stock','category', 'sizes', 'colors'];
+  const allowed = ['name','description','price','image','stock','category', 'sizes', 'colors', 'isNew', 'isPromo', 'rating'];
   for (const key of allowed) {
     if (body[key] !== undefined) {
       if (key === 'stock') {
         fields.push('in_stock = ?');
         values.push(Number(body[key]) > 0 ? 1 : 0);
+      } else if (key === 'isNew') {
+        fields.push('is_new = ?');
+        values.push(body[key] ? 1 : 0);
+      } else if (key === 'isPromo') {
+        fields.push('is_promo = ?');
+        values.push(body[key] ? 1 : 0);
       } else if (key === 'sizes' || key === 'colors') {
         fields.push(key + ' = ?');
         values.push(Array.isArray(body[key]) ? JSON.stringify(body[key]) : '[]');

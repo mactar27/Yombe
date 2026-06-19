@@ -1,8 +1,8 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, X } from 'lucide-react'
-type Product = { id: number; name: string; description: string | null; price: number; image: string | null; in_stock: number; category: string | null; sizes: any; colors: any }
-const emptyForm = { name: '', description: '', price: '', image: '', stock: '1', category: 'Maillots de clubs', sizes: [] as string[], colors: [] as string[] }
+type Product = { id: number; name: string; description: string | null; price: number; image: string | null; in_stock: number; category: string | null; sizes: any; colors: any; is_new: boolean | number; is_promo: boolean | number; rating: number }
+const emptyForm = { name: '', description: '', price: '', image: '', stock: '1', category: 'Maillots de clubs', sizes: [] as string[], colors: [] as string[], isNew: false, isPromo: false, rating: 0 }
 const CATEGORIES = ["Maillots de clubs", "Maillots personnalisés", "Chaussures de football", "Équipements de gardien", "Vestes", "Ensembles", "Jeans", "Chemises", "Accessoires (Cônes, Cartons, etc.)"];
 const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
 const SHOE_SIZES = Array.from({ length: 14 }, (_, i) => String(34 + i));
@@ -38,7 +38,19 @@ export default function AdminProductsPage() {
     let parsedColors = [];
     try { parsedColors = typeof p.colors === 'string' ? JSON.parse(p.colors) : (p.colors || []) } catch(e){}
     
-    setForm({ name: p.name, description: p.description ?? '', price: String(p.price), image: p.image ?? '', stock: String(p.in_stock), category: p.category ?? CATEGORIES[0], sizes: parsedSizes, colors: parsedColors })
+    setForm({ 
+      name: p.name, 
+      description: p.description ?? '', 
+      price: String(p.price), 
+      image: p.image ?? '', 
+      stock: String(p.in_stock), 
+      category: p.category ?? CATEGORIES[0], 
+      sizes: parsedSizes, 
+      colors: parsedColors,
+      isNew: Boolean(p.isNew ?? p.is_new ?? false),
+      isPromo: Boolean(p.isPromo ?? p.is_promo ?? false),
+      rating: Number(p.rating ?? 0)
+    })
     setImageFiles([]); setShowForm(true)
   }
   
@@ -71,7 +83,19 @@ export default function AdminProductsPage() {
       let finalImage = finalColors.length > 0 ? finalColors[0] : form.image
       let finalSizes = form.sizes
 
-      const body = { name: form.name, description: form.description || null, price: Number(form.price), stock: Number(form.stock), category: form.category || null, image: finalImage || null, sizes: finalSizes, colors: finalColors }
+      const body = { 
+        name: form.name, 
+        description: form.description || null, 
+        price: Number(form.price), 
+        stock: Number(form.stock), 
+        category: form.category || null, 
+        image: finalImage || null, 
+        sizes: finalSizes, 
+        colors: finalColors,
+        isNew: form.isNew,
+        isPromo: form.isPromo,
+        rating: form.rating
+      }
       let res;
       if (editing) {
         res = await fetch('/api/admin/products/' + editing.id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
@@ -168,6 +192,11 @@ export default function AdminProductsPage() {
                     <option value="0">Rupture</option>
                   </select>
                 </div>
+              </div>
+              <div className="flex flex-wrap gap-4 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer text-sm"><input type="checkbox" checked={form.isNew} onChange={e => setForm(f=>({...f, isNew: e.target.checked}))} className="rounded border-border" /> Nouveauté</label>
+                <label className="flex items-center gap-2 cursor-pointer text-sm"><input type="checkbox" checked={form.isPromo} onChange={e => setForm(f=>({...f, isPromo: e.target.checked}))} className="rounded border-border" /> En promotion</label>
+                <label className="flex items-center gap-2 cursor-pointer text-sm"><input type="checkbox" checked={form.rating === 5} onChange={e => setForm(f=>({...f, rating: e.target.checked ? 5 : 0}))} className="rounded border-border" /> Populaire</label>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
