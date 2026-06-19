@@ -19,6 +19,15 @@ export function AuthForm() {
   const [loginError, setLoginError] = useState<string | null>(null)
   const [loginLoading, setLoginLoading] = useState(false)
 
+  // Signup state
+  const [regName, setRegName] = useState("")
+  const [regPhone, setRegPhone] = useState("")
+  const [regEmail, setRegEmail] = useState("")
+  const [regPassword, setRegPassword] = useState("")
+  const [regConfirm, setRegConfirm] = useState("")
+  const [regError, setRegError] = useState<string | null>(null)
+  const [regLoading, setRegLoading] = useState(false)
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoginLoading(true)
@@ -33,7 +42,6 @@ export function AuthForm() {
       if (!res.ok) {
         setLoginError(data.error || "Erreur de connexion")
       } else {
-        // Redirect based on role
         if (data.user.role === "admin") {
           router.push("/admin")
         } else {
@@ -44,6 +52,35 @@ export function AuthForm() {
       setLoginError("Une erreur est survenue. Veuillez réessayer.")
     } finally {
       setLoginLoading(false)
+    }
+  }
+
+  async function handleSignup(e: React.FormEvent) {
+    e.preventDefault()
+    setRegError(null)
+    
+    if (regPassword !== regConfirm) {
+      setRegError("Les mots de passe ne correspondent pas.")
+      return
+    }
+
+    setRegLoading(true)
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: regName, phone: regPhone, email: regEmail, password: regPassword }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setRegError(data.error || "Erreur lors de l'inscription")
+      } else {
+        router.push("/compte")
+      }
+    } catch {
+      setRegError("Une erreur est survenue. Veuillez réessayer.")
+    } finally {
+      setRegLoading(false)
     }
   }
 
@@ -107,31 +144,34 @@ export function AuthForm() {
 
         <TabsContent value="inscription">
           <form
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={handleSignup}
             className="mt-6 flex flex-col gap-4 rounded-2xl border border-border bg-card p-6"
           >
             <div className="flex flex-col gap-2">
               <Label htmlFor="reg-name">Nom complet</Label>
-              <Input id="reg-name" required placeholder="Votre nom" />
+              <Input id="reg-name" required placeholder="Votre nom" value={regName} onChange={e => setRegName(e.target.value)} />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="reg-phone">Téléphone</Label>
-              <Input id="reg-phone" type="tel" required placeholder="+221 ..." />
+              <Input id="reg-phone" type="tel" required placeholder="+221 ..." value={regPhone} onChange={e => setRegPhone(e.target.value)} />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="reg-email">Email</Label>
-              <Input id="reg-email" type="email" required placeholder="vous@exemple.com" />
+              <Input id="reg-email" type="email" required placeholder="vous@exemple.com" value={regEmail} onChange={e => setRegEmail(e.target.value)} />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="reg-password">Mot de passe</Label>
-              <Input id="reg-password" type="password" required placeholder="••••••••" />
+              <Input id="reg-password" type="password" required placeholder="••••••••" value={regPassword} onChange={e => setRegPassword(e.target.value)} />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="reg-confirm">Confirmation du mot de passe</Label>
-              <Input id="reg-confirm" type="password" required placeholder="••••••••" />
+              <Input id="reg-confirm" type="password" required placeholder="••••••••" value={regConfirm} onChange={e => setRegConfirm(e.target.value)} />
             </div>
-            <Button type="submit" size="lg">
-              Créer mon compte
+            {regError && (
+              <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{regError}</p>
+            )}
+            <Button type="submit" size="lg" disabled={regLoading}>
+              {regLoading ? "Création en cours..." : "Créer mon compte"}
             </Button>
           </form>
         </TabsContent>
