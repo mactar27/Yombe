@@ -1,8 +1,8 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, X } from 'lucide-react'
-type Product = { id: number; name: string; description: string | null; price: number; image: string | null; stock: number; category: string | null }
-const emptyForm = { name: '', description: '', price: '', image: '', stock: '', category: '' }
+type Product = { id: number; name: string; description: string | null; price: number; image: string | null; in_stock: number; category: string | null }
+const emptyForm = { name: '', description: '', price: '', image: '', stock: '1', category: '' }
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [total, setTotal] = useState(0)
@@ -28,7 +28,7 @@ export default function AdminProductsPage() {
   function openCreate() { setEditing(null); setForm(emptyForm); setImageFile(null); setShowForm(true) }
   function openEdit(p: Product) {
     setEditing(p)
-    setForm({ name: p.name, description: p.description ?? '', price: String(p.price), image: p.image ?? '', stock: String(p.stock), category: p.category ?? '' })
+    setForm({ name: p.name, description: p.description ?? '', price: String(p.price), image: p.image ?? '', stock: String(p.in_stock), category: p.category ?? '' })
     setImageFile(null); setShowForm(true)
   }
   async function handleSubmit(e: React.FormEvent) {
@@ -87,7 +87,7 @@ export default function AdminProductsPage() {
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">{p.category ?? '—'}</td>
                 <td className="px-4 py-3 font-semibold" style={{ color: '#c8a25d' }}>{Number(p.price).toLocaleString('fr-FR')} FCFA</td>
-                <td className="px-4 py-3"><span className={'rounded-full px-2 py-0.5 text-xs font-medium ' + (p.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')}>{p.stock > 0 ? p.stock + ' en stock' : 'Rupture'}</span></td>
+                <td className="px-4 py-3"><span className={'rounded-full px-2 py-0.5 text-xs font-medium ' + (p.in_stock ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')}>{p.in_stock ? 'En stock' : 'Rupture'}</span></td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <button onClick={() => openEdit(p)} className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition"><Pencil className="size-4" /></button>
@@ -119,7 +119,13 @@ export default function AdminProductsPage() {
               <div><label className="mb-1 block text-sm font-medium">Nom *</label><input required type="text" value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition" /></div>
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="mb-1 block text-sm font-medium">Prix (FCFA) *</label><input required type="number" min="0" value={form.price} onChange={e => setForm(f=>({...f,price:e.target.value}))} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition" /></div>
-                <div><label className="mb-1 block text-sm font-medium">Stock *</label><input required type="number" min="0" value={form.stock} onChange={e => setForm(f=>({...f,stock:e.target.value}))} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition" /></div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Disponibilité *</label>
+                  <select required value={form.stock} onChange={e => setForm(f=>({...f,stock:e.target.value}))} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition">
+                    <option value="1">En stock</option>
+                    <option value="0">Rupture</option>
+                  </select>
+                </div>
               </div>
               <div><label className="mb-1 block text-sm font-medium">Catégorie</label><input type="text" value={form.category} onChange={e => setForm(f=>({...f,category:e.target.value}))} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition" /></div>
               <div><label className="mb-1 block text-sm font-medium">Description</label><textarea rows={2} value={form.description} onChange={e => setForm(f=>({...f,description:e.target.value}))} className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#c8a25d] transition" /></div>
