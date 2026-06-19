@@ -8,12 +8,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Vous devez être connecté pour passer commande' }, { status: 401 })
     }
 
-    const user = JSON.parse(authCookie.value)
-    let clientId = user.id;
+    const userCookie = JSON.parse(authCookie.value)
+    
+    // 1. Fetch full user details from DB
+    const [userRows] = await pool.execute('SELECT name, phone, email FROM users WHERE id = ?', [userCookie.id]) as any[]
+    if (userRows.length === 0) {
+      return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 401 })
+    }
+    const user = userRows[0]
 
-    const [clientRows] = await pool.execute('SELECT id FROM clients WHERE phone = ? OR email = ? LIMIT 1', [user.phone || 'none', user.email || 'none']) as any[]
+    // 2. Find client_id
+    let clientId = userCookie.id;
+    const [clientRows] = await pool.execute('SELECT id FROM clients WHERE (phone = ? AND phone IS NOT NULL) OR (email = ? AND email IS NOT NULL) LIMIT 1', [user.phone, user.email]) as any[]
+    
     if (clientRows.length > 0) {
       clientId = clientRows[0].id
+    } else {
+      // 3. Create client if not exists
+      const [insertClient] = await pool.execute(
+        'INSERT INTO clients (name, phone, email) VALUES (?, ?, ?)',
+        [user.name, user.phone, user.email]
+      ) as any[]
+      clientId = insertClient.insertId
     }
 
     const body = await req.json()
