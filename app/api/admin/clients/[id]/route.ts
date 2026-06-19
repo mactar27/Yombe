@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
-  await pool.execute('DELETE FROM clients WHERE id = ?', [params.id]);
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  await pool.execute('DELETE FROM clients WHERE id = ?', [id]);
   return NextResponse.json({ success: true });
 }
