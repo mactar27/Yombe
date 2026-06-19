@@ -50,7 +50,7 @@ export const categoryGroups: CategoryGroup[] = [
     title: "Football & Sport",
     description:
       "Maillots de clubs, maillots personnalisés, équipements d'arbitrage, ballons et matériel d'entraînement.",
-    image: "/placeholder.svg?height=720&width=560",
+    image: "/images/football-sport.jpeg",
     items: [
       "Maillots de clubs",
       "Maillots personnalisés",
