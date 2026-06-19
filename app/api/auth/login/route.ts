@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import pool from '@/lib/db'
 import bcrypt from 'bcrypt'
+import { normalizePhone } from '@/lib/normalize-phone'
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,12 +11,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Téléphone et mot de passe requis' }, { status: 400 })
     }
 
-    // Normalize phone (strip spaces)
-    const normalizedPhone = phone.replace(/\s+/g, '')
+    const normalized = normalizePhone(phone)
 
     const [rows] = await pool.execute(
-      'SELECT id, name, phone, password_hash, role FROM users WHERE REPLACE(phone, " ", "") = ?',
-      [normalizedPhone]
+      'SELECT id, name, phone, password_hash, role FROM users WHERE phone = ?',
+      [normalized]
     ) as any[]
 
     const user = rows[0]
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     res.cookies.set('auth_user', JSON.stringify({ id: user.id, name: user.name, role: user.role }), {
       httpOnly: true,
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
       path: '/',
     })
 

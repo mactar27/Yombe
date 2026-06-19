@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import pool from '@/lib/db'
 import bcrypt from 'bcrypt'
+import { normalizePhone } from '@/lib/normalize-phone'
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,34 +11,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Nom, téléphone et mot de passe requis' }, { status: 400 })
     }
 
-    const normalizedPhone = phone.replace(/\s+/g, '')
-
-    // Ensure users table supports phone-based auth
-    await pool.execute(`
-      CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        phone VARCHAR(50) NOT NULL UNIQUE,
-        password_hash VARCHAR(255) NOT NULL,
-        role VARCHAR(50) DEFAULT 'client',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `)
-
-    await pool.execute(`
-      CREATE TABLE IF NOT EXISTS clients (
-        id BIGINT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255),
-        email VARCHAR(255),
-        phone VARCHAR(50),
-        address TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `)
+    const normalizedPhone = normalizePhone(phone)
 
     // Check if phone already taken
     const [existing] = await pool.execute(
-      'SELECT id FROM users WHERE REPLACE(phone, " ", "") = ?',
+      'SELECT id FROM users WHERE phone = ?',
       [normalizedPhone]
     ) as any[]
 
