@@ -131,16 +131,16 @@ export default function AdminOrdersPage() {
             <div className="mt-4 flex flex-col gap-6">
               
               {/* Infos Client & Livraison */}
-              <div className="grid grid-cols-2 gap-4 rounded-xl border border-border bg-muted/30 p-4 text-sm">
-                <div>
-                  <h3 className="font-semibold mb-2">Client</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 rounded-xl border border-border bg-muted/30 p-5 text-sm">
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-foreground mb-2">Client</h3>
                   <p className="font-medium text-foreground">{selectedOrder.order.client_name}</p>
-                  <p className="text-muted-foreground">{selectedOrder.order.client_email}</p>
+                  <p className="text-muted-foreground break-all">{selectedOrder.order.client_email}</p>
                 </div>
-                <div>
-                  <h3 className="font-semibold mb-2">Livraison</h3>
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-foreground mb-2">Livraison</h3>
                   <p className="font-medium text-foreground">{selectedOrder.order.phone}</p>
-                  <p className="text-muted-foreground whitespace-pre-wrap">{selectedOrder.order.delivery_address}</p>
+                  <p className="text-muted-foreground break-words">{selectedOrder.order.delivery_address}</p>
                 </div>
               </div>
 
