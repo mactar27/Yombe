@@ -25,6 +25,7 @@ export type CategoryGroup = {
   title: string
   description: string
   image: string
+  href: string
   items: string[]
 }
 
@@ -34,6 +35,7 @@ export const categoryGroups: CategoryGroup[] = [
     description:
       "T-shirts, chemises, pantalons, jeans, vestes, ensembles, chaussures, casquettes et accessoires tendance.",
     image: "/images/mode-lifestyle.jpeg",
+    href: "/boutique?groupe=mode",
     items: [
       "T-shirts",
       "Chemises",
@@ -51,6 +53,7 @@ export const categoryGroups: CategoryGroup[] = [
     description:
       "Maillots de clubs, maillots personnalisés, équipements d'arbitrage, ballons et matériel d'entraînement.",
     image: "/images/football-sport.jpeg",
+    href: "/boutique?groupe=football",
     items: [
       "Maillots de clubs",
       "Maillots personnalisés",

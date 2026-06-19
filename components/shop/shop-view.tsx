@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { SlidersHorizontal, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -33,6 +34,7 @@ type Props = {
 }
 
 export function ShopView({ products, maxPrice }: Props) {
+  const searchParams = useSearchParams()
   const allSizes = useMemo(() => Array.from(new Set(products.flatMap((p) => p.sizes))), [products])
   const allColors = useMemo(() => Array.from(new Set(products.flatMap((p) => p.colors))), [products])
 
@@ -42,6 +44,16 @@ export function ShopView({ products, maxPrice }: Props) {
   const [price, setPrice] = useState<number>(maxPrice)
   const [inStockOnly, setInStockOnly] = useState(false)
   const [sort, setSort] = useState<SortKey>("popularite")
+
+  // Pré-sélectionner les filtres depuis l'URL
+  useEffect(() => {
+    const group = searchParams.get("groupe")
+    if (group === "mode") {
+      setAudiences(["homme", "femme", "enfant", "accessoires"])
+    } else if (group === "football") {
+      setAudiences(["football"])
+    }
+  }, [searchParams])
 
   const toggle = <T,>(value: T, list: T[], setter: (v: T[]) => void) => {
     setter(list.includes(value) ? list.filter((v) => v !== value) : [...list, value])

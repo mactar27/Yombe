@@ -16,7 +16,7 @@ export function Categories() {
         {categoryGroups.map((group) => (
           <Link
             key={group.title}
-            href="/boutique"
+            href={group.href}
             className="group relative overflow-hidden rounded-2xl border border-border"
           >
             <div className="relative aspect-[16/10] overflow-hidden">
