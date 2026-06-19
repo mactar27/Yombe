@@ -8,6 +8,7 @@ export type CartItem = {
   quantity: number
   size?: string
   image?: string
+  key: string
 }
 
 type CartContextValue = {
@@ -15,8 +16,8 @@ type CartContextValue = {
   count: number
   subtotal: number
   addItem: (product: Product, size?: string, image?: string) => void
-  updateQuantity: (id: string, quantity: number) => void
-  removeItem: (id: string) => void
+  updateQuantity: (key: string, quantity: number) => void
+  removeItem: (key: string) => void
   clear: () => void
   isOpen: boolean
   setOpen: (open: boolean) => void
@@ -29,30 +30,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isOpen, setOpen] = useState(false)
 
   const addItem = useCallback((product: Product, size?: string, image?: string) => {
+    const key = `${product.id}__${size ?? ''}__${image ?? ''}`
     setItems((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id && item.size === size && item.image === image)
+      const existing = prev.find((item) => item.key === key)
       if (existing) {
         return prev.map((item) =>
-          item.product.id === product.id && item.size === size && item.image === image
-            ? { ...item, quantity: item.quantity + 1 }
-            : item,
+          item.key === key ? { ...item, quantity: item.quantity + 1 } : item
         )
       }
-      return [...prev, { product, quantity: 1, size, image }]
+      return [...prev, { product, quantity: 1, size, image, key }]
     })
     setOpen(true)
   }, [])
 
-  const updateQuantity = useCallback((id: string, quantity: number) => {
+  const updateQuantity = useCallback((key: string, quantity: number) => {
     setItems((prev) =>
       prev
-        .map((item) => (item.product.id === id ? { ...item, quantity: Math.max(1, quantity) } : item))
+        .map((item) => (item.key === key ? { ...item, quantity: Math.max(1, quantity) } : item))
         .filter((item) => item.quantity > 0),
     )
   }, [])
 
-  const removeItem = useCallback((id: string) => {
-    setItems((prev) => prev.filter((item) => item.product.id !== id))
+  const removeItem = useCallback((key: string) => {
+    setItems((prev) => prev.filter((item) => item.key !== key))
   }, [])
 
   const clear = useCallback(() => setItems([]), [])

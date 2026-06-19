@@ -43,8 +43,8 @@ export function CartSheet() {
           <>
             <div className="flex-1 overflow-y-auto px-4">
               <ul className="flex flex-col gap-4 py-4">
-                {items.map((item, idx) => (
-                  <li key={`${item.product.id}-${item.size}-${item.image || idx}`} className="flex gap-3">
+                {items.map((item) => (
+                  <li key={item.key} className="flex gap-3">
                     <div className="relative size-20 shrink-0 overflow-hidden rounded-md border bg-muted">
                       <Image
                         src={item.image || item.product.image || "/placeholder.svg"}
@@ -68,7 +68,7 @@ export function CartSheet() {
                             type="button"
                             aria-label="Diminuer la quantité"
                             className="flex size-7 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.key, item.quantity - 1)}
                           >
                             <Minus className="size-3.5" />
                           </button>
@@ -77,7 +77,7 @@ export function CartSheet() {
                             type="button"
                             aria-label="Augmenter la quantité"
                             className="flex size-7 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.key, item.quantity + 1)}
                           >
                             <Plus className="size-3.5" />
                           </button>
@@ -86,7 +86,7 @@ export function CartSheet() {
                           type="button"
                           aria-label="Supprimer l'article"
                           className="ml-auto text-muted-foreground transition-colors hover:text-destructive"
-                          onClick={() => removeItem(item.product.id)}
+                          onClick={() => removeItem(item.key)}
                         >
                           <Trash2 className="size-4" />
                         </button>
