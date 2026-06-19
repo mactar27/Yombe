@@ -22,7 +22,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   
   // Get order items
   const [itemsRows] = await pool.execute(
-    'SELECT oi.*, p.name as product_name, p.image as product_image FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id WHERE oi.order_id = ?',
+    'SELECT oi.*, p.name as product_name, COALESCE(oi.selected_image, p.image) as product_image FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id WHERE oi.order_id = ?',
     [id]
   ) as any[];
   

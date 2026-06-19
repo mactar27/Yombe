@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
 
       for (const item of items) {
         await conn.execute(
-          'INSERT INTO order_items (order_id, product_id, quantity, size, price_at_purchase) VALUES (?, ?, ?, ?, ?)',
-          [orderId, item.product.id, item.quantity, item.size || null, item.product.price]
+          'INSERT INTO order_items (order_id, product_id, quantity, size, price_at_purchase, selected_image) VALUES (?, ?, ?, ?, ?, ?)',
+          [orderId, item.product.id, item.quantity, item.size || null, item.product.price, item.image || null]
         )
       }
 
