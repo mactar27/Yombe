@@ -7,23 +7,13 @@ import { Minus, Plus, ShoppingBag, Tag, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { useCart } from "@/components/cart-provider"
 import { formatPrice } from "@/lib/data"
-
-const paymentMethods = ["Wave", "Orange Money", "Carte bancaire", "Paiement à la livraison"]
 
 export function CartView() {
   const { items, updateQuantity, removeItem, subtotal } = useCart()
   const [promo, setPromo] = useState("")
   const [applied, setApplied] = useState(false)
-  const [payment, setPayment] = useState("Wave")
 
   const discount = applied ? Math.round(subtotal * 0.1) : 0
   const shipping = items.length > 0 ? 2000 : 0
@@ -162,24 +152,6 @@ export function CartView() {
           <div className="flex items-center justify-between">
             <span className="font-medium">Total</span>
             <span className="font-serif text-2xl font-bold">{formatPrice(total)}</span>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium" htmlFor="payment">
-              Mode de paiement
-            </label>
-            <Select value={payment} onValueChange={setPayment}>
-              <SelectTrigger id="payment">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {paymentMethods.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <Button size="lg" className="w-full">
