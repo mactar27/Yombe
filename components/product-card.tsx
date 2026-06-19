@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { Heart, Plus, Star } from "lucide-react"
+import { Heart, Plus, Star, ChevronLeft, ChevronRight } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -12,29 +12,50 @@ import { cn } from "@/lib/utils"
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart()
   const [liked, setLiked] = useState(false)
+  const [imageIdx, setImageIdx] = useState(0)
+
+  const images = Array.isArray(product.colors) && product.colors.length > 0 
+    ? product.colors 
+    : [product.image || "/placeholder.svg"]
+  
+  const currentImage = images[imageIdx] || images[0]
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation()
+    setImageIdx(i => i === 0 ? images.length - 1 : i - 1)
+  }
+  const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation()
+    setImageIdx(i => i === images.length - 1 ? 0 : i + 1)
+  }
 
   return (
     <div className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <div className="relative aspect-[4/5] overflow-hidden bg-muted">
+      <div className="relative aspect-[4/5] overflow-hidden bg-muted group">
         <Image
-          src={product.image || "/placeholder.svg"}
+          src={currentImage}
           alt={product.name}
           fill
           sizes="(max-width: 768px) 50vw, 25vw"
-          className={cn(
-            "object-cover transition-all duration-500 group-hover:scale-105",
-            product.colors?.length > 1 ? "group-hover:opacity-0" : ""
-          )}
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        {product.colors?.length > 1 && (
-          <Image
-            src={product.colors[1]}
-            alt={product.name}
-            fill
-            sizes="(max-width: 768px) 50vw, 25vw"
-            className="absolute inset-0 object-cover opacity-0 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100"
-          />
+        
+        {images.length > 1 && (
+          <>
+            <button onClick={handlePrev} className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white opacity-0 transition-opacity hover:bg-black/80 group-hover:opacity-100 z-20">
+              <ChevronLeft className="size-4" />
+            </button>
+            <button onClick={handleNext} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white opacity-0 transition-opacity hover:bg-black/80 group-hover:opacity-100 z-20">
+              <ChevronRight className="size-4" />
+            </button>
+            <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5 z-20">
+              {images.map((_, i) => (
+                <div key={i} className={cn("h-1.5 rounded-full transition-all", i === imageIdx ? "w-4 bg-primary" : "w-1.5 bg-white/60")} />
+              ))}
+            </div>
+          </>
         )}
+
         <div className="absolute left-3 top-3 flex flex-col gap-1.5 z-10">
           {product.isNew && <Badge className="bg-secondary text-secondary-foreground">Nouveau</Badge>}
           {product.isPromo && <Badge className="bg-primary text-primary-foreground">Promo</Badge>}
@@ -83,7 +104,7 @@ export function ProductCard({ product }: { product: Product }) {
           <Button
             size="sm"
             disabled={!product.inStock}
-            onClick={() => addItem(product, product.sizes[0])}
+            onClick={() => addItem(product, product.sizes[0], currentImage)}
             className="gap-1"
           >
             <Plus className="size-4" />

@@ -43,11 +43,11 @@ export function CartSheet() {
           <>
             <div className="flex-1 overflow-y-auto px-4">
               <ul className="flex flex-col gap-4 py-4">
-                {items.map((item) => (
-                  <li key={`${item.product.id}-${item.size}`} className="flex gap-3">
+                {items.map((item, idx) => (
+                  <li key={`${item.product.id}-${item.size}-${item.image || idx}`} className="flex gap-3">
                     <div className="relative size-20 shrink-0 overflow-hidden rounded-md border bg-muted">
                       <Image
-                        src={item.product.image || "/placeholder.svg"}
+                        src={item.image || item.product.image || "/placeholder.svg"}
                         alt={item.product.name}
                         fill
                         className="object-cover"

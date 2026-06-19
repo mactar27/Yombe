@@ -7,13 +7,14 @@ export type CartItem = {
   product: Product
   quantity: number
   size?: string
+  image?: string
 }
 
 type CartContextValue = {
   items: CartItem[]
   count: number
   subtotal: number
-  addItem: (product: Product, size?: string) => void
+  addItem: (product: Product, size?: string, image?: string) => void
   updateQuantity: (id: string, quantity: number) => void
   removeItem: (id: string) => void
   clear: () => void
@@ -27,17 +28,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isOpen, setOpen] = useState(false)
 
-  const addItem = useCallback((product: Product, size?: string) => {
+  const addItem = useCallback((product: Product, size?: string, image?: string) => {
     setItems((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id && item.size === size)
+      const existing = prev.find((item) => item.product.id === product.id && item.size === size && item.image === image)
       if (existing) {
         return prev.map((item) =>
-          item.product.id === product.id && item.size === size
+          item.product.id === product.id && item.size === size && item.image === image
             ? { ...item, quantity: item.quantity + 1 }
             : item,
         )
       }
-      return [...prev, { product, quantity: 1, size }]
+      return [...prev, { product, quantity: 1, size, image }]
     })
     setOpen(true)
   }, [])
