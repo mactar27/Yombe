@@ -95,7 +95,17 @@ export function SiteFooter() {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-white/50 sm:flex-row sm:px-6 lg:px-8">
           <p>&copy; {new Date().getFullYear()} Yombe Ctyi 313. Tous droits réservés.</p>
-          <p>Mode &amp; Sport à Ziguinchor, Sénégal</p>
+          <p>
+            Développé par{" "}
+            <a
+              href="https://wockytech.xyz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary transition-colors hover:text-white"
+            >
+              WockyTech
+            </a>
+          </p>
         </div>
       </div>
     </footer>
