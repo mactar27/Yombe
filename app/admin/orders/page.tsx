@@ -52,7 +52,7 @@ export default function AdminOrdersPage() {
     setDialogOpen(true)
     setDetailsLoading(true)
     try {
-      const res = await fetch('/api/admin/orders/' + id)
+      const res = await fetch('/api/admin/orders/' + id + '?_t=' + Date.now())
       const data = await res.json()
       if (res.ok) setSelectedOrder(data)
     } catch (e) {
