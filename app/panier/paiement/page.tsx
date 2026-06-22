@@ -149,7 +149,7 @@ export default function CheckoutPage() {
             {items.map((item) => (
               <li key={`${item.product.id}-${item.size}`} className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
-                  {item.quantity}x {item.product.name} {item.size && `(${item.size})`}
+                  {item.quantity}x {item.product.name} {item.size && item.size !== "À choisir" ? `(${item.size})` : `(Taille à préciser)`}
                 </span>
                 <span className="font-medium">{formatPrice(item.product.price * item.quantity)}</span>
               </li>

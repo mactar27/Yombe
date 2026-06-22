@@ -17,6 +17,7 @@ type CartContextValue = {
   subtotal: number
   addItem: (product: Product, size?: string, image?: string) => void
   updateQuantity: (key: string, quantity: number) => void
+  updateSize: (oldKey: string, newSize: string) => void
   removeItem: (key: string) => void
   clear: () => void
   isOpen: boolean
@@ -57,11 +58,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clear = useCallback(() => setItems([]), [])
 
+  const updateSize = useCallback((oldKey: string, newSize: string) => {
+    setItems((prev) => {
+      const itemToUpdate = prev.find((item) => item.key === oldKey);
+      if (!itemToUpdate) return prev;
+      
+      const newKey = `${itemToUpdate.product.id}__${newSize ?? ''}__${itemToUpdate.image ?? ''}`;
+      
+      const existingNewKeyItem = prev.find((item) => item.key === newKey && item.key !== oldKey);
+      if (existingNewKeyItem) {
+        return prev
+          .map((item) => item.key === newKey ? { ...item, quantity: item.quantity + itemToUpdate.quantity } : item)
+          .filter((item) => item.key !== oldKey);
+      } else {
+        return prev.map((item) => item.key === oldKey ? { ...item, size: newSize, key: newKey } : item);
+      }
+    });
+  }, []);
+
   const value = useMemo<CartContextValue>(() => {
     const count = items.reduce((sum, item) => sum + item.quantity, 0)
     const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
-    return { items, count, subtotal, addItem, updateQuantity, removeItem, clear, isOpen, setOpen }
-  }, [items, addItem, updateQuantity, removeItem, clear, isOpen])
+    return { items, count, subtotal, addItem, updateQuantity, updateSize, removeItem, clear, isOpen, setOpen }
+  }, [items, addItem, updateQuantity, updateSize, removeItem, clear, isOpen])
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }

@@ -17,7 +17,7 @@ import { useCart } from "@/components/cart-provider"
 import { formatPrice } from "@/lib/data"
 
 export function CartSheet() {
-  const { items, isOpen, setOpen, updateQuantity, removeItem, subtotal, count } = useCart()
+  const { items, isOpen, setOpen, updateQuantity, updateSize, removeItem, subtotal, count } = useCart()
 
   return (
     <Sheet open={isOpen} onOpenChange={setOpen}>
@@ -56,7 +56,20 @@ export function CartSheet() {
                     </div>
                     <div className="flex flex-1 flex-col">
                       <p className="font-medium leading-tight">{item.product.name}</p>
-                      {item.size && (
+                      {Array.isArray(item.product.sizes) && item.product.sizes.length > 0 && item.product.sizes[0] !== "Unique" ? (
+                        <div className="flex items-center gap-2">
+                          <select
+                            className="rounded border border-border bg-background px-1 py-0.5 text-xs text-foreground"
+                            value={item.size === "À choisir" || !item.size ? "" : item.size}
+                            onChange={(e) => updateSize(item.key, e.target.value)}
+                          >
+                            <option value="" disabled>Taille</option>
+                            {item.product.sizes.map((s: string) => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        </div>
+                      ) : item.size && item.size !== "Unique" && (
                         <p className="text-xs text-muted-foreground">Taille : {item.size}</p>
                       )}
                       <p className="mt-1 text-sm font-semibold text-foreground">
