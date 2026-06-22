@@ -203,3 +203,29 @@ export async function isFavorite(userId: number, productId: string): Promise<boo
   )
   return rows.length > 0
 }
+
+// ─── Admin Dashboard ─────────────────────────────────────────────────────────
+
+export async function getDashboardStats() {
+  const productsResult = await query<RowDataPacket[]>('SELECT COUNT(*) as count FROM products')
+  const totalProducts = productsResult[0]?.count || 0
+
+  const monthlyResult = await query<RowDataPacket[]>(`
+    SELECT SUM(total) as sum 
+    FROM orders 
+    WHERE status != 'cancelled' 
+      AND MONTH(created_at) = MONTH(CURRENT_DATE()) 
+      AND YEAR(created_at) = YEAR(CURRENT_DATE())
+  `)
+  const monthlyRevenue = monthlyResult[0]?.sum || 0
+
+  const annualResult = await query<RowDataPacket[]>(`
+    SELECT SUM(total) as sum 
+    FROM orders 
+    WHERE status != 'cancelled' 
+      AND YEAR(created_at) = YEAR(CURRENT_DATE())
+  `)
+  const annualRevenue = annualResult[0]?.sum || 0
+
+  return { totalProducts, monthlyRevenue, annualRevenue }
+}

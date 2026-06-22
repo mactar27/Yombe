@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, X } from 'lucide-react'
 type Product = { id: number; name: string; description: string | null; price: number; image: string | null; in_stock: number; category: string | null; sizes: any; colors: any; is_new: boolean | number; is_promo: boolean | number; rating: number }
 const emptyForm = { name: '', description: '', price: '', image: '', stock: '1', category: 'Homme', sizes: [] as string[], colors: [] as string[], isNew: false, isPromo: false, rating: 0 }
-const CATEGORIES = ["Homme", "Femme", "Enfant", "Football", "Accessoires"];
+const CATEGORIES = ["Homme", "Femme", "Enfant", "Unisexe", "Football", "Accessoires"];
 const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
 const SHOE_SIZES = Array.from({ length: 14 }, (_, i) => String(34 + i));
 export default function AdminProductsPage() {

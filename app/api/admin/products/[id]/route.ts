@@ -3,6 +3,26 @@ import pool from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+function categoryToAudience(category: string | null): string[] {
+  if (!category) return []
+  const map: Record<string, string[]> = {
+    'Homme': ['homme'],
+    'Femme': ['femme'],
+    'Enfant': ['enfant'],
+    'Unisexe': ['unisexe'],
+    'Football': ['football'],
+    'Accessoires': ['accessoires'],
+    'Maillots de clubs': ['football'],
+    'Maillots personnalisés': ['football'],
+    "Maillots d'arbitres": ['football'],
+    'Chaussures de football': ['football'],
+    'Ballons': ['football'],
+    'Cônes d\'entraînement': ['football'],
+    'Cartons jaunes et rouges': ['football'],
+  }
+  return map[category] ?? []
+}
+
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [rows] = await pool.execute('SELECT * FROM products WHERE id = ?', [id]);
@@ -31,6 +51,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       } else if (key === 'sizes' || key === 'colors') {
         fields.push(key + ' = ?');
         values.push(Array.isArray(body[key]) ? JSON.stringify(body[key]) : '[]');
+      } else if (key === 'category') {
+        fields.push('category = ?');
+        values.push(body[key]);
+        // Also update audience based on category
+        fields.push('audience = ?');
+        values.push(JSON.stringify(categoryToAudience(body[key])));
       } else {
         fields.push(key + ' = ?');
         values.push(body[key]);

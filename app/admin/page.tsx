@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Package, Users, ShoppingCart } from 'lucide-react'
+import { Package, Users, ShoppingCart, TrendingUp, Calendar } from 'lucide-react'
+import { getDashboardStats } from '@/lib/queries'
 
 export const metadata: Metadata = {
   title: 'Admin | Yombe Ctyi 313',
@@ -28,7 +29,9 @@ const cards = [
   },
 ]
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const { totalProducts, monthlyRevenue, annualRevenue } = await getDashboardStats()
+
   return (
     <div className="p-8">
       {/* Header */}
@@ -47,6 +50,46 @@ export default function AdminPage() {
         </p>
       </div>
 
+      {/* Stats Cards */}
+      <div className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex size-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+              <Package className="size-6" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Total Produits</p>
+              <h3 className="text-2xl font-bold">{totalProducts}</h3>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex size-12 items-center justify-center rounded-xl bg-green-50 text-green-600">
+              <TrendingUp className="size-6" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Ventes (Mois)</p>
+              <h3 className="text-2xl font-bold">{Number(monthlyRevenue).toLocaleString('fr-FR')} FCFA</h3>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex size-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+              <Calendar className="size-6" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Ventes (Année)</p>
+              <h3 className="text-2xl font-bold">{Number(annualRevenue).toLocaleString('fr-FR')} FCFA</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2 className="mb-6 text-2xl font-bold">Gestion rapide</h2>
       {/* Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map(({ href, label, description, icon: Icon }) => (
