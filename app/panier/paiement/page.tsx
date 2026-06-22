@@ -20,8 +20,7 @@ export default function CheckoutPage() {
   const [phone, setPhone] = useState("")
 
   const discount = 0
-  const shipping = items.length > 0 ? 2000 : 0
-  const total = subtotal - discount + shipping
+  const total = subtotal - discount
 
   useEffect(() => {
     if (items.length === 0 && !success) {
@@ -164,7 +163,7 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Livraison</span>
-              <span>{formatPrice(shipping)}</span>
+              <span className="text-sm italic">À déterminer</span>
             </div>
             <div className="flex justify-between font-serif text-lg font-bold mt-2">
               <span>Total</span>

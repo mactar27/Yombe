@@ -13,8 +13,7 @@ import { formatPrice } from "@/lib/data"
 export function CartView() {
   const { items, updateQuantity, removeItem, subtotal } = useCart()
 
-  const shipping = items.length > 0 ? 2000 : 0
-  const total = subtotal + shipping
+  const total = subtotal // Le prix de la livraison sera communiqué au client
   if (items.length === 0) {
     return (
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-6 px-4 py-24 text-center">
@@ -108,7 +107,7 @@ export function CartView() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Livraison</span>
-              <span>{formatPrice(shipping)}</span>
+              <span className="text-sm italic">À déterminer</span>
             </div>
           </div>
 

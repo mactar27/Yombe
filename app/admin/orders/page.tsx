@@ -170,7 +170,7 @@ export default function AdminOrdersPage() {
               {/* Total */}
               <div className="flex justify-end pt-4 border-t border-border">
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground mb-1">Total à payer (Livraison incluse)</p>
+                  <p className="text-sm text-muted-foreground mb-1">Total à payer</p>
                   <p className="font-heading text-2xl font-bold text-[#c8a25d]">
                     {Number(selectedOrder.order.total).toLocaleString('fr-FR')} FCFA
                   </p>
