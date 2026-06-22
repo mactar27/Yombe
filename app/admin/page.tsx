@@ -30,7 +30,7 @@ const cards = [
 ]
 
 export default async function AdminPage() {
-  const { totalProducts, monthlyRevenue, annualRevenue } = await getDashboardStats()
+  const { totalProducts, totalInventoryValue, monthlyRevenue, annualRevenue } = await getDashboardStats()
 
   return (
     <div className="p-8">
@@ -51,7 +51,7 @@ export default async function AdminPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <div className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="flex size-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
@@ -60,6 +60,18 @@ export default async function AdminPage() {
             <div>
               <p className="text-sm text-muted-foreground">Total Produits</p>
               <h3 className="text-2xl font-bold">{totalProducts}</h3>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex size-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
+              <Package className="size-6" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Valeur estimée</p>
+              <h3 className="text-2xl font-bold">{Number(totalInventoryValue).toLocaleString('fr-FR')} FCFA</h3>
             </div>
           </div>
         </div>

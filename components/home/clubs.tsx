@@ -16,7 +16,7 @@ export function Clubs() {
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-2 lg:px-8">
         <div className="relative order-last aspect-[4/3] overflow-hidden rounded-2xl border border-border lg:order-first">
           <Image
-            src="/placeholder.svg?height=600&width=800"
+            src="/images/equipements.png"
             alt="Équipements pour clubs et académies de football"
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"

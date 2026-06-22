@@ -210,6 +210,9 @@ export async function getDashboardStats() {
   const productsResult = await query<RowDataPacket[]>('SELECT COUNT(*) as count FROM products')
   const totalProducts = productsResult[0]?.count || 0
 
+  const inventoryResult = await query<RowDataPacket[]>('SELECT SUM(price) as sum FROM products')
+  const totalInventoryValue = inventoryResult[0]?.sum || 0
+
   const monthlyResult = await query<RowDataPacket[]>(`
     SELECT SUM(total) as sum 
     FROM orders 
@@ -227,5 +230,5 @@ export async function getDashboardStats() {
   `)
   const annualRevenue = annualResult[0]?.sum || 0
 
-  return { totalProducts, monthlyRevenue, annualRevenue }
+  return { totalProducts, totalInventoryValue, monthlyRevenue, annualRevenue }
 }
