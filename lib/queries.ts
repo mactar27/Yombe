@@ -5,6 +5,13 @@ import type { Product, Testimonial } from './data'
 // ─── Helper : parse JSON fields from DB rows ────────────────────────────────
 
 function parseProduct(row: RowDataPacket): Product {
+  let parsedSizes = typeof row.sizes === 'string' ? JSON.parse(row.sizes) : row.sizes;
+  if (parsedSizes && typeof parsedSizes === 'object' && !Array.isArray(parsedSizes)) {
+    parsedSizes = Object.keys(parsedSizes).filter(k => parsedSizes[k] > 0);
+  } else if (!Array.isArray(parsedSizes)) {
+    parsedSizes = [];
+  }
+
   return {
     id: row.id,
     name: row.name,
@@ -13,7 +20,7 @@ function parseProduct(row: RowDataPacket): Product {
     description: row.description,
     category: row.category,
     audience: typeof row.audience === 'string' ? JSON.parse(row.audience) : row.audience,
-    sizes: typeof row.sizes === 'string' ? JSON.parse(row.sizes) : row.sizes,
+    sizes: parsedSizes,
     colors: typeof row.colors === 'string' ? JSON.parse(row.colors) : row.colors,
     image: row.image || '/placeholder.svg',
     isNew: Boolean(row.is_new),
