@@ -7,15 +7,18 @@ export async function GET(request: Request) {
   const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit') ?? '20')));
   const search = searchParams.get('search') ?? '';
   const offset = (page - 1) * limit;
-  const where = search ? 'WHERE name LIKE ? OR email LIKE ?' : '';
+  const where = search 
+    ? "WHERE role = 'client' AND (name LIKE ? OR email LIKE ?)" 
+    : "WHERE role = 'client'";
   const values = search ? ['%' + search + '%', '%' + search + '%'] : [];
   const [rows] = await pool.execute(
-    `SELECT c.*, 
-     COALESCE(c.address, (SELECT delivery_address FROM orders WHERE client_id = c.id ORDER BY created_at DESC LIMIT 1)) as display_address 
-     FROM clients c ` + where + ' ORDER BY c.id DESC LIMIT ' + limit + ' OFFSET ' + offset,
+    `SELECT u.id, u.name, u.email, u.phone, u.address,
+     COALESCE(u.address, (SELECT delivery_address FROM orders WHERE client_id = u.id ORDER BY created_at DESC LIMIT 1)) as display_address,
+     u.created_at
+     FROM users u ` + where + ' ORDER BY u.id DESC LIMIT ' + limit + ' OFFSET ' + offset,
     values
   );
-  const [cnt] = await pool.execute('SELECT COUNT(*) as total FROM clients c ' + where, values);
+  const [cnt] = await pool.execute("SELECT COUNT(*) as total FROM users WHERE role = 'client'" + (search ? ' AND (name LIKE ? OR email LIKE ?)' : ''), values);
   return NextResponse.json({ data: rows, total: (cnt as any)[0].total, page, limit });
 }
 
@@ -23,8 +26,8 @@ export async function POST(request: Request) {
   const { name, email, phone, address } = await request.json();
   if (!name || !email) return NextResponse.json({ error: 'name and email required' }, { status: 400 });
   const [r] = await pool.execute(
-    'INSERT INTO clients (name,email,phone,address) VALUES (?,?,?,?)',
-    [name, email, phone ?? null, address ?? null]
+    'INSERT INTO users (name,email,phone,address,role) VALUES (?,?,?,?,?)',
+    [name, email, phone ?? null, address ?? null, 'client']
   );
   return NextResponse.json({ id: (r as any).insertId }, { status: 201 });
 }

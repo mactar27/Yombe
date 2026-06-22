@@ -7,20 +7,23 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { formatPrice } from "@/lib/data"
-import { CheckCircle2, Loader2, MapPin, Phone } from "lucide-react"
+import { CheckCircle2, Loader2, MapPin, MessageCircle, Phone, User } from "lucide-react"
+
+const WHATSAPP_NUMBER = "221770000000" // Remplacer par le vrai numéro
 
 export default function CheckoutPage() {
   const router = useRouter()
   const { items, subtotal, clear } = useCart()
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [orderId, setOrderId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const [guestName, setGuestName] = useState("")
   const [address, setAddress] = useState("")
   const [phone, setPhone] = useState("")
 
-  const discount = 0
-  const total = subtotal - discount
+  const total = subtotal
 
   useEffect(() => {
     if (items.length === 0 && !success) {
@@ -41,7 +44,8 @@ export default function CheckoutPage() {
           items,
           total,
           address,
-          phone
+          phone,
+          clientName: guestName,
         })
       })
 
@@ -51,12 +55,22 @@ export default function CheckoutPage() {
         throw new Error(data.error || "Une erreur est survenue")
       }
 
+      setOrderId(data.orderId)
       setSuccess(true)
       clear()
-      
+
+      // Build WhatsApp message
+      const itemsSummary = items
+        .map(i => `${i.quantity}x ${i.product.name}${i.size && i.size !== "À choisir" ? ` (Taille ${i.size})` : ""}`)
+        .join(", ")
+      const msg = encodeURIComponent(
+        `Bonjour Yombe Ctyi, je viens de passer la commande #${data.orderId} : ${itemsSummary}. Merci de me confirmer le prix de la livraison pour ${address}.`
+      )
+
+      // Redirect to WhatsApp after a short delay
       setTimeout(() => {
-        router.push("/compte")
-      }, 3000)
+        window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, "_blank")
+      }, 1500)
 
     } catch (err: any) {
       setError(err.message)
@@ -69,11 +83,14 @@ export default function CheckoutPage() {
     return (
       <div className="mx-auto flex max-w-lg flex-col items-center justify-center py-24 text-center px-4">
         <CheckCircle2 className="size-20 text-primary mb-6" />
-        <h1 className="font-serif text-3xl font-bold mb-2">Commande validée !</h1>
-        <p className="text-muted-foreground mb-8">
-          Votre commande a été enregistrée avec succès. Vous recevrez un appel pour la livraison.
+        <h1 className="font-serif text-3xl font-bold mb-2">Commande #{orderId} enregistrée !</h1>
+        <p className="text-muted-foreground mb-6">
+          Votre commande a bien été reçue. Nous allons vous rediriger vers WhatsApp pour confirmer la livraison.
         </p>
-        <p className="text-sm">Redirection vers votre espace client...</p>
+        <div className="flex items-center gap-2 rounded-xl bg-green-50 border border-green-200 px-5 py-3 text-green-700 text-sm font-medium">
+          <MessageCircle className="size-4" />
+          Ouverture de WhatsApp en cours…
+        </div>
       </div>
     )
   }
@@ -82,17 +99,46 @@ export default function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-      <h1 className="font-serif text-3xl font-bold mb-8">Finaliser la commande</h1>
+      <h1 className="font-serif text-3xl font-bold mb-2">Finaliser la commande</h1>
+      <p className="text-muted-foreground text-sm mb-8">Aucun compte requis — renseignez juste vos informations de livraison.</p>
       
       <div className="grid gap-8 md:grid-cols-2">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div className="rounded-2xl border border-border bg-card p-6">
-            <h2 className="font-serif text-xl font-bold mb-4">Informations de livraison</h2>
+            <h2 className="font-serif text-xl font-bold mb-4">Vos informations</h2>
             
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
+                <Label htmlFor="guestName" className="flex items-center gap-2">
+                  <User className="size-4" /> Nom complet
+                </Label>
+                <Input
+                  id="guestName"
+                  required
+                  placeholder="Prénom et Nom"
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="phone" className="flex items-center gap-2">
+                  <Phone className="size-4" /> Numéro WhatsApp
+                </Label>
+                <Input
+                  id="phone"
+                  required
+                  type="tel"
+                  placeholder="+221 77 000 00 00"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">Nous vous contacterons sur ce numéro pour la livraison.</p>
+              </div>
+
+              <div className="flex flex-col gap-2">
                 <Label htmlFor="address" className="flex items-center gap-2">
-                  <MapPin className="size-4" /> Adresse complète
+                  <MapPin className="size-4" /> Adresse de livraison
                 </Label>
                 <Input
                   id="address"
@@ -102,20 +148,6 @@ export default function CheckoutPage() {
                   onChange={(e) => setAddress(e.target.value)}
                 />
               </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="size-4" /> Numéro de téléphone de réception
-                </Label>
-                <Input
-                  id="phone"
-                  required
-                  type="tel"
-                  placeholder="+221 ..."
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              </div>
             </div>
           </div>
 
@@ -123,21 +155,29 @@ export default function CheckoutPage() {
             <h2 className="font-serif text-xl font-bold">Paiement</h2>
             <div className="rounded-lg bg-muted p-4">
               <p className="font-medium text-sm">Paiement à la livraison</p>
-              <p className="text-xs text-muted-foreground mt-1">Vous paierez en espèces lors de la réception de votre commande.</p>
+              <p className="text-xs text-muted-foreground mt-1">Vous paierez en espèces lors de la réception. Le prix de livraison vous sera communiqué via WhatsApp.</p>
+            </div>
+
+            <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+              <MessageCircle className="size-4 shrink-0" />
+              <span>Après validation, vous serez redirigé vers WhatsApp pour confirmer la livraison.</span>
             </div>
 
             {error && (
               <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>
             )}
 
-            <Button type="submit" size="lg" className="w-full mt-4" disabled={loading}>
+            <Button type="submit" size="lg" className="w-full mt-2" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />
-                  Traitement...
+                  Traitement…
                 </>
               ) : (
-                "Valider ma commande"
+                <>
+                  <MessageCircle className="mr-2 size-4" />
+                  Valider et confirmer sur WhatsApp
+                </>
               )}
             </Button>
           </div>
@@ -163,10 +203,10 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Livraison</span>
-              <span className="text-sm italic">À déterminer</span>
+              <span className="text-sm italic text-muted-foreground">À confirmer sur WhatsApp</span>
             </div>
             <div className="flex justify-between font-serif text-lg font-bold mt-2">
-              <span>Total</span>
+              <span>Total articles</span>
               <span>{formatPrice(total)}</span>
             </div>
           </div>

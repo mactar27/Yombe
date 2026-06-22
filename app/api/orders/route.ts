@@ -3,44 +3,37 @@ import pool from '@/lib/db'
 
 export async function POST(req: NextRequest) {
   try {
-    const authCookie = req.cookies.get('auth_user')
-    if (!authCookie) {
-      return NextResponse.json({ error: 'Vous devez être connecté pour passer commande' }, { status: 401 })
-    }
-
-    const userCookie = JSON.parse(authCookie.value)
-    
-    // 1. Fetch full user details from DB
-    const [userRows] = await pool.execute('SELECT name, phone, email FROM users WHERE id = ?', [userCookie.id]) as any[]
-    if (userRows.length === 0) {
-      return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 401 })
-    }
-    const user = userRows[0]
-
-    // 2. Find client_id
-    let clientId = userCookie.id;
-    const [clientRows] = await pool.execute('SELECT id FROM clients WHERE (phone = ? AND phone IS NOT NULL) OR (email = ? AND email IS NOT NULL) LIMIT 1', [user.phone, user.email]) as any[]
-    
-    if (clientRows.length > 0) {
-      clientId = clientRows[0].id
-    } else {
-      // 3. Create client if not exists
-      const [insertClient] = await pool.execute(
-        'INSERT INTO clients (name, phone, email) VALUES (?, ?, ?)',
-        [user.name, user.phone, user.email]
-      ) as any[]
-      clientId = insertClient.insertId
-    }
-
     const body = await req.json()
-    const { items, total, address, phone } = body
+    const { items, total, address, phone, clientName, clientEmail, userId } = body
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'Le panier est vide' }, { status: 400 })
     }
-
     if (!address) {
       return NextResponse.json({ error: 'Adresse de livraison requise' }, { status: 400 })
+    }
+    if (!phone) {
+      return NextResponse.json({ error: 'Numéro WhatsApp requis' }, { status: 400 })
+    }
+
+    // Try to get user from cookie if connected
+    const authCookie = req.cookies.get('auth_user')
+    let resolvedUserId = userId ?? null
+    let resolvedName = clientName ?? 'Invité'
+    let resolvedEmail = clientEmail ?? null
+
+    if (authCookie) {
+      try {
+        const userCookie = JSON.parse(authCookie.value)
+        resolvedUserId = userCookie.id
+        const [userRows] = await pool.execute('SELECT name, email FROM users WHERE id = ?', [userCookie.id]) as any[]
+        if (userRows.length > 0) {
+          resolvedName = userRows[0].name
+          resolvedEmail = userRows[0].email
+        }
+      } catch (e) {
+        // ignore — treat as guest
+      }
     }
 
     const conn = await pool.getConnection()
@@ -48,8 +41,8 @@ export async function POST(req: NextRequest) {
       await conn.beginTransaction()
 
       const [orderResult] = await conn.execute(
-        'INSERT INTO orders (client_id, status, total, delivery_address, phone) VALUES (?, ?, ?, ?, ?)',
-        [clientId, 'pending', total, address, phone || user.phone]
+        'INSERT INTO orders (client_id, client_name, client_email, status, total, delivery_address, phone) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [resolvedUserId, resolvedName, resolvedEmail, 'pending', total, address, phone]
       ) as any[]
 
       const orderId = orderResult.insertId

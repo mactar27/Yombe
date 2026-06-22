@@ -47,10 +47,15 @@ export function ShopView({ products, maxPrice }: Props) {
   // Pré-sélectionner les filtres depuis l'URL
   useEffect(() => {
     const group = searchParams.get("groupe")
+    const category = searchParams.get("category")
     if (group === "mode") {
       setAudiences(["homme", "femme", "enfant", "accessoires"])
     } else if (group === "football") {
       setAudiences(["football"])
+    } else if (category === "Football") {
+      setAudiences(["football"])
+    } else if (category === "Lifestyle") {
+      setAudiences(["homme", "femme", "enfant", "accessoires"])
     }
   }, [searchParams])
 

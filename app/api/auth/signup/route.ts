@@ -26,10 +26,7 @@ export async function POST(req: NextRequest) {
       [name, normalizedEmail, hash, 'client']
     ) as any[]
 
-    await pool.execute(
-      'INSERT INTO clients (name, email) VALUES (?, ?)',
-      [name, normalizedEmail]
-    )
+
 
     const userId = userResult.insertId
 

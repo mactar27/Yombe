@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     if (isEmail) {
       const [rows] = await pool.execute(
-        'SELECT id, name, email, password_hash, role FROM users WHERE email = ?',
+        'SELECT id, name, email, phone, password_hash, role FROM users WHERE email = ?',
         [identifier.trim().toLowerCase()]
       ) as any[]
       user = rows[0]
