@@ -24,7 +24,7 @@ export default function AdminClientsPage() {
   }
   const totalPages = Math.ceil(total / limit)
   return (
-    <div className="p-8">
+    <div className="p-4 lg:p-8">
       <div className="mb-8">
         <h1 className="font-heading text-3xl font-bold text-foreground">Clients</h1>
         <p className="mt-1 text-sm text-muted-foreground">{total} client{total !== 1 ? 's' : ''} au total</p>
@@ -33,8 +33,8 @@ export default function AdminClientsPage() {
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <input type="text" placeholder="Rechercher…" value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} className="w-full rounded-xl border border-border bg-card py-2.5 pl-9 pr-4 text-sm outline-none focus:border-[#c8a25d] transition" />
       </div>
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
+        <table className="w-full text-sm min-w-[800px]">
           <thead style={{ backgroundColor: '#f6f4ef' }}>
             <tr>
               {['Client','Email','Téléphone','Adresse','Actions'].map(h => <th key={h} className="px-4 py-3 text-left font-semibold text-muted-foreground">{h}</th>)}
