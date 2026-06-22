@@ -17,43 +17,44 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      {/* Sidebar */}
+    <div className="flex flex-col lg:flex-row min-h-screen bg-background text-foreground">
+      {/* Sidebar / Topbar */}
       <aside
         style={{ backgroundColor: '#111111' }}
-        className="flex w-64 flex-col border-r border-[#2a2a2a] p-6 shrink-0"
+        className="flex w-full lg:w-64 flex-col border-b lg:border-b-0 lg:border-r border-[#2a2a2a] p-4 lg:p-6 shrink-0 sticky top-0 z-20 lg:h-screen lg:overflow-y-auto"
       >
         {/* Logo */}
-        <Link href="/" className="mb-8 flex items-center gap-2">
+        <Link href="/" className="mb-4 lg:mb-8 flex shrink-0 items-center gap-2">
           <Image
             src="/logo.png"
             alt="Yombe Ctyi 313"
-            width={160}
-            height={60}
-            className="h-12 w-auto object-contain"
+            width={120}
+            height={40}
+            className="h-8 lg:h-12 w-auto object-contain"
           />
         </Link>
 
-        {/* Dashboard button — always visible & prominent */}
-        <Link
-          href="/admin"
-          className={`mb-4 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition-colors ${
-            pathname === '/admin'
-              ? 'bg-[#c8a25d] text-white'
-              : 'bg-[#1c1c1c] text-[#c8a25d] hover:bg-[#c8a25d] hover:text-white'
-          }`}
-        >
-          <LayoutDashboard className="size-4 shrink-0" />
-          Dashboard
-        </Link>
+        {/* Navigation Container */}
+        <div className="flex lg:flex-col gap-2 lg:gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex-1">
+          {/* Dashboard button */}
+          <Link
+            href="/admin"
+            className={`shrink-0 flex items-center gap-2 lg:gap-3 rounded-xl px-3 py-2 lg:py-3 text-sm font-semibold transition-colors lg:mb-4 ${
+              pathname === '/admin'
+                ? 'bg-[#c8a25d] text-white'
+                : 'bg-[#1c1c1c] text-[#c8a25d] hover:bg-[#c8a25d] hover:text-white'
+            }`}
+          >
+            <LayoutDashboard className="size-4 shrink-0" />
+            Dashboard
+          </Link>
 
-        {/* Nav links */}
-        <nav className="flex flex-col gap-1 flex-1">
+          {/* Nav links */}
           {sideLinks.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`shrink-0 flex items-center gap-2 lg:gap-3 rounded-lg px-3 py-2 lg:py-2.5 text-sm font-medium transition-colors ${
                 pathname === href
                   ? 'bg-[#1c1c1c] text-[#c8a25d]'
                   : 'text-white/70 hover:bg-[#1c1c1c] hover:text-[#c8a25d]'
@@ -63,16 +64,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {label}
             </Link>
           ))}
-        </nav>
 
-        {/* Footer */}
-        <Link
-          href="/"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/50 transition-colors hover:text-white/80"
-        >
-          <ArrowLeft className="size-4" />
-          Retour au site
-        </Link>
+          {/* Spacer for desktop */}
+          <div className="hidden lg:block lg:flex-1" />
+
+          {/* Footer */}
+          <Link
+            href="/"
+            className="shrink-0 flex items-center gap-2 lg:gap-3 rounded-lg px-3 py-2 lg:py-2.5 text-sm font-medium text-white/50 transition-colors hover:text-white/80 lg:mt-auto"
+          >
+            <ArrowLeft className="size-4 shrink-0" />
+            <span className="hidden lg:inline">Retour au site</span>
+            <span className="lg:hidden">Retour</span>
+          </Link>
+        </div>
       </aside>
 
       {/* Content */}
