@@ -98,46 +98,33 @@ export function ProductCard({ product }: { product: Product }) {
         </button>
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">{product.category}</p>
-        <h3 className="font-serif text-lg font-semibold leading-snug text-foreground">{product.name}</h3>
-        <p className="line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
-        <div className="mt-1 flex items-center gap-1">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star
-              key={i}
-              className={cn(
-                "size-3.5",
-                i < product.rating ? "fill-primary text-primary" : "text-border",
-              )}
-            />
-          ))}
-        </div>
-        <div className="mt-auto flex flex-col gap-3 pt-2">
-          <div className="flex items-end justify-between gap-2">
-            <div className="flex flex-col">
-              {product.oldPrice && (
-                <span className="text-xs text-muted-foreground line-through">
-                  {formatPrice(product.oldPrice)}
-                </span>
-              )}
-              <span className="font-serif text-lg font-bold text-foreground">
-                {formatPrice(product.price)}
+      <div className="flex flex-1 flex-col gap-1.5 p-3">
+        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{product.category}</p>
+        <h3 className="font-serif text-base font-semibold leading-tight text-foreground line-clamp-1">{product.name}</h3>
+        
+        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+          <div className="flex flex-col">
+            {product.oldPrice && (
+              <span className="text-[10px] text-muted-foreground line-through">
+                {formatPrice(product.oldPrice)}
               </span>
-            </div>
-            <Button
-              size="sm"
-              disabled={!product.inStock}
-              onClick={(e) => {
-                e.preventDefault();
-                addItem(product, Array.isArray(product.sizes) && product.sizes.length > 0 && product.sizes[0] !== "Unique" ? "À choisir" : undefined, currentImage)
-              }}
-              className="gap-1"
-            >
-              <Plus className="size-4" />
-              Ajouter
-            </Button>
+            )}
+            <span className="font-serif text-base font-bold text-foreground">
+              {formatPrice(product.price)}
+            </span>
           </div>
+          <Button
+            size="sm"
+            disabled={!product.inStock}
+            onClick={(e) => {
+              e.preventDefault();
+              addItem(product, Array.isArray(product.sizes) && product.sizes.length > 0 && product.sizes[0] !== "Unique" ? "À choisir" : undefined, currentImage)
+            }}
+            className="h-8 gap-1 px-3 text-xs"
+          >
+            <Plus className="size-3.5" />
+            Ajouter
+          </Button>
         </div>
       </div>
     </div>
