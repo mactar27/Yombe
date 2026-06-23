@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { formatPrice } from "@/lib/data"
 import { CheckCircle2, Loader2, MapPin, MessageCircle, Phone, User } from "lucide-react"
 
-const WHATSAPP_NUMBER = "221770000000" // Remplacer par le vrai numéro
+const WHATSAPP_NUMBER = "221784007943"
 
 export default function CheckoutPage() {
   const router = useRouter()

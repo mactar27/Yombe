@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, MessageCircle, Upload } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const WHATSAPP_NUMBER = "221770000000" // Remplacer par le vrai numéro
+const WHATSAPP_NUMBER = "221784007943"
 
 const JERSEY_MODELS = [
   { id: "classic", label: "Classique", description: "Col rond, coupe standard", emoji: "⚽" },
