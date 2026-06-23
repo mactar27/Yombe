@@ -33,10 +33,19 @@ export default function AdminProductsPage() {
   function openCreate() { setEditing(null); setForm(emptyForm); setImageFiles([]); setShowForm(true) }
   function openEdit(p: Product) {
     setEditing(p)
-    let parsedSizes = [];
-    try { parsedSizes = typeof p.sizes === 'string' ? JSON.parse(p.sizes) : (p.sizes || []) } catch(e){}
-    let parsedColors = [];
-    try { parsedColors = typeof p.colors === 'string' ? JSON.parse(p.colors) : (p.colors || []) } catch(e){}
+    let parsedSizes: string[] = [];
+    try { 
+      const s = typeof p.sizes === 'string' ? JSON.parse(p.sizes) : (p.sizes || []);
+      if (Array.isArray(s)) parsedSizes = s;
+      else if (typeof s === 'object' && s !== null) parsedSizes = Object.keys(s);
+    } catch(e){}
+    
+    let parsedColors: string[] = [];
+    try { 
+      const c = typeof p.colors === 'string' ? JSON.parse(p.colors) : (p.colors || []);
+      if (Array.isArray(c)) parsedColors = c;
+      else if (typeof c === 'object' && c !== null) parsedColors = Object.values(c);
+    } catch(e){}
     
     setForm({ 
       name: p.name, 
