@@ -88,6 +88,6 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error(err)
-    return NextResponse.json({ error: 'Erreur lors de la création de la commande' }, { status: 500 })
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Erreur lors de la création de la commande' }, { status: 500 })
   }
 }
