@@ -132,10 +132,8 @@ export function CartView() {
             <span className="font-serif text-2xl font-bold">{formatPrice(total)}</span>
           </div>
 
-          <Button asChild size="lg" className="w-full">
-            <Link href="/panier/paiement">
-              Commander
-            </Link>
+          <Button render={<Link href="/panier/paiement" />} size="lg" className="w-full">
+            Commander
           </Button>
           <Button render={<Link href="/boutique" />} variant="ghost" className="w-full">
             Continuer mes achats
