@@ -61,11 +61,12 @@ export default function CheckoutPage() {
 
       // Build WhatsApp message
       const itemsSummary = items
-        .map(i => `${i.quantity}x ${i.product.name}${i.size && i.size !== "À choisir" ? ` (Taille ${i.size})` : ""}`)
-        .join(", ")
-      const msg = encodeURIComponent(
-        `Bonjour Yombe Ctyi, je viens de passer la commande #${data.orderId} : ${itemsSummary}. Merci de me confirmer le prix de la livraison pour ${address}.`
-      )
+        .map(i => `• ${i.quantity}x ${i.product.name}${i.size && i.size !== "À choisir" ? ` (Taille ${i.size})` : ""}`)
+        .join("\n")
+
+      const rawMsg = `Bonjour *Yombe Ctyi 313* !\nNouvelle commande de : *${guestName}*\n\nArticles :\n${itemsSummary}\n\nLivraison : *${address}*\n\nMerci de me confirmer le tarif de livraison.`
+      
+      const msg = encodeURIComponent(rawMsg)
 
       // Redirect to WhatsApp after a short delay
       setTimeout(() => {

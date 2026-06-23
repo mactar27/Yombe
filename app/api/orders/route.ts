@@ -52,6 +52,30 @@ export async function POST(req: NextRequest) {
           'INSERT INTO order_items (order_id, product_id, quantity, size, price_at_purchase, selected_image) VALUES (?, ?, ?, ?, ?, ?)',
           [orderId, item.product.id, item.quantity, item.size || null, item.product.price, item.image || null]
         )
+
+        // Mettre à jour le stock spécifique à la taille
+        const [prodRows] = await conn.execute('SELECT sizes FROM products WHERE id = ? FOR UPDATE', [item.product.id]) as any[];
+        if (prodRows.length > 0) {
+          const product = prodRows[0];
+          let sizesObj: any = null;
+          try {
+            sizesObj = typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes;
+          } catch(e) {}
+          
+          if (sizesObj && typeof sizesObj === 'object' && !Array.isArray(sizesObj)) {
+            if (item.size && sizesObj[item.size] !== undefined) {
+               sizesObj[item.size] = Math.max(0, Number(sizesObj[item.size]) - item.quantity);
+            }
+            // Recalculate total stock from all sizes
+            const totalStock = Object.values(sizesObj).reduce((a: any, b: any) => Number(a) + Number(b), 0);
+            const newInStock = (totalStock as number) > 0 ? 1 : 0;
+            
+            await conn.execute(
+              'UPDATE products SET sizes = ?, in_stock = ? WHERE id = ?', 
+              [JSON.stringify(sizesObj), newInStock, item.product.id]
+            );
+          }
+        }
       }
 
       await conn.commit()
