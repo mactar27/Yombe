@@ -116,7 +116,7 @@ export function ShopView({ products, maxPrice }: Props) {
           min={5000}
           max={maxPrice}
           step={1000}
-          onValueChange={(v) => setPrice(v[0])}
+          onValueChange={(v) => setPrice(Array.isArray(v) ? v[0] : (v as any))}
         />
         <p className="text-sm text-muted-foreground">Jusqu&apos;à {formatPrice(price)}</p>
       </div>

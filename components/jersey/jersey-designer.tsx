@@ -95,7 +95,7 @@ export function JerseyDesigner() {
         >
           <div className="flex flex-col gap-2">
             <Label htmlFor="model">Modèle</Label>
-            <Select value={model} onValueChange={setModel}>
+            <Select value={model} onValueChange={(val) => setModel(val || '')}>
               <SelectTrigger id="model">
                 <SelectValue />
               </SelectTrigger>
