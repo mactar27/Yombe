@@ -62,6 +62,19 @@ export function SiteHeader() {
                     {link.label}
                   </Link>
                 ))}
+                {user && (
+                  <>
+                    <div className="my-4 border-t border-border" />
+                    <Button
+                      variant="ghost"
+                      onClick={handleLogout}
+                      className="justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="size-5" />
+                      Déconnexion
+                    </Button>
+                  </>
+                )}
               </nav>
             </SheetContent>
           </Sheet>
@@ -115,15 +128,6 @@ export function SiteHeader() {
               )}
               <Button render={<Link href="/compte" />} variant="ghost" size="icon" aria-label="Mon compte" title="Mon espace client">
                 <User className="size-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Déconnexion"
-                onClick={handleLogout}
-                title={`Déconnexion (${user.name})`}
-              >
-                <LogOut className="size-5" />
               </Button>
             </>
           ) : (
