@@ -203,8 +203,8 @@ export default function CheckoutPage() {
               <span>{formatPrice(subtotal)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Livraison</span>
-              <span className="text-sm italic text-muted-foreground">À confirmer sur WhatsApp</span>
+              <span className="text-muted-foreground">Frais de livraison</span>
+              <span className="text-sm italic text-muted-foreground">À déterminer par appel/message</span>
             </div>
             <div className="flex justify-between font-serif text-lg font-bold mt-2">
               <span>Total articles</span>
